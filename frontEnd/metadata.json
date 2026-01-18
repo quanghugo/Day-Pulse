@@ -1,0 +1,8 @@
+{
+  "name": "DayPulse",
+  "description": "A modern status-sharing and real-time chat platform for staying connected with your inner circle.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
