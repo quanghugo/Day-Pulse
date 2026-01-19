@@ -1,0 +1,23 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /auth-service
+
+spring:
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/auth-service"
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+jwt:
+  signing-key: fbX2a4nQ4tdMnfExFUl+uA9aD9IFS+csS8GP96pR75RxrCiUcEYvpn+b4wWsgJshvXMUQiDUxhEBxA9RdPj+OQ==
+  valid-duration: 3600 # in second
+  refreshable-duration: 36000 # insecond
