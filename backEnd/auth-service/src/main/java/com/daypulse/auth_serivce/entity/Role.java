@@ -6,7 +6,6 @@ import jakarta.persistence.ManyToMany;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.security.Permission;
 import java.util.Set;
 
 @Data

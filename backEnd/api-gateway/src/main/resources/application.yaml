@@ -1,3 +1,53 @@
+server:
+  port: 8888
+
 spring:
   application:
     name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # Auth Service Routes
+        - id: auth-service
+          uri: http://localhost:8080
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - StripPrefix=1
+
+        # Main Service Routes
+        - id: main-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/main-service/**
+
+      # Global CORS configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+            maxAge: 3600
+
+# JWT Configuration
+jwt:
+  signing-key: fbX2a4nQ4tdMnfExFUl+uA9aD9IFS+csS8GP96pR75RxrCiUcEYvpn+b4wWsgJshvXMUQiDUxhEBxA9RdPj+OQ==
+
+# Service URLs
+auth-service:
+  url: http://localhost:8080
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    com.qnit18.api_gateway: DEBUG
