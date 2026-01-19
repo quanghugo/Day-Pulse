@@ -7,25 +7,39 @@ spring:
   cloud:
     gateway:
       routes:
-        # Auth Service Routes
+        # Auth Service Routes - Public endpoints
         - id: auth-service
           uri: http://localhost:8080
           predicates:
-            - Path=/auth-service/**
+            - Path=/api/v1/auth/**
           filters:
-            - StripPrefix=1
+            - RewritePath=/api/v1/auth/(?<segment>.*), /auth-service/auth/$\{segment}
+            # TODO: [FUTURE-RESILIENCE] Add rate limiting
+            # - name: RequestRateLimiter
+            #   args:
+            #     redis-rate-limiter.replenishRate: 10
+            #     redis-rate-limiter.burstCapacity: 20
 
-        # Main Service Routes
-        - id: main-service
+        # User Service Routes - Protected endpoints
+        - id: user-service
           uri: http://localhost:8081
           predicates:
-            - Path=/main-service/**
+            - Path=/api/v1/users/**
+          filters:
+            - RewritePath=/api/v1/users/(?<segment>.*), /user-service/users/$\{segment}
+            # TODO: [FUTURE-RESILIENCE] Add circuit breaker
+            # - name: CircuitBreaker
+            #   args:
+            #     name: userServiceCircuitBreaker
+            #     fallbackUri: forward:/fallback/users
 
       # Global CORS configuration
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOrigins: 
+              - "http://localhost:3000"
+              - "http://localhost:4200"
             allowedMethods:
               - GET
               - POST
@@ -34,7 +48,7 @@ spring:
               - PATCH
               - OPTIONS
             allowedHeaders: "*"
-            allowCredentials: false
+            allowCredentials: true
             maxAge: 3600
 
 # JWT Configuration

@@ -20,17 +20,18 @@ public class SecurityConfig {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        // Public endpoints - no authentication required
-                        .pathMatchers("/auth-service/users").permitAll()
-                        .pathMatchers("/auth-service/auth/token").permitAll()
-                        .pathMatchers("/auth-service/auth/introspect").permitAll()
-                        .pathMatchers("/auth-service/auth/logout").permitAll()
-                        .pathMatchers("/auth-service/auth/refresh-token").permitAll()
-                        .pathMatchers("/genzf/assets/**").permitAll()
-                        .pathMatchers("/genzf/chart-data/**").permitAll()
-                        .pathMatchers("/genzf/swagger-ui/**").permitAll()
-                        .pathMatchers("/genzf/api-docs/**").permitAll()
-                        .pathMatchers("/genzf/swagger-ui.html").permitAll()
+                        // Public endpoints - Authentication not required
+                        .pathMatchers("/api/v1/auth/login").permitAll()
+                        .pathMatchers("/api/v1/auth/register").permitAll()
+                        .pathMatchers("/api/v1/auth/refresh").permitAll()
+                        .pathMatchers("/api/v1/auth/verify-otp").permitAll()
+                        .pathMatchers("/api/v1/auth/forgot-password").permitAll()
+                        .pathMatchers("/api/v1/auth/introspect").permitAll()
+                        
+                        // Protected endpoints - Authentication required
+                        .pathMatchers("/api/v1/auth/logout").authenticated()
+                        .pathMatchers("/api/v1/users/**").authenticated()
+                        
                         // All other requests require authentication
                         .anyExchange().authenticated()
                 )

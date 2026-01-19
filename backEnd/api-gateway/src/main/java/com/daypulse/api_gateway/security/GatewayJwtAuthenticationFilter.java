@@ -60,11 +60,25 @@ public class GatewayJwtAuthenticationFilter implements WebFilter {
 
                                 // Step 4: Create authentication object
                                 String username = jwt.getSubject();
+                                String userId = jwt.getClaimAsString("userId");
                                 UsernamePasswordAuthenticationToken authentication =
                                         new UsernamePasswordAuthenticationToken(username, null, authorities);
 
-                                // Step 5: Set authentication in security context and continue
-                                return chain.filter(exchange)
+                                // Step 5: Add user context headers to downstream requests
+                                ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                                        .header("X-User-Id", userId)
+                                        .header("X-User-Roles", scope)
+                                        .build();
+
+                                // TODO: [FUTURE-REDIS] Check token blacklist for faster revocation
+                                // Boolean isRevoked = redisTemplate.hasKey("revoked:token:" + DigestUtils.md5DigestAsHex(token.getBytes()));
+                                // if (Boolean.TRUE.equals(isRevoked)) {
+                                //     log.warn("Token is blacklisted");
+                                //     return chain.filter(exchange);
+                                // }
+
+                                // Step 6: Set authentication in security context and continue
+                                return chain.filter(exchange.mutate().request(mutatedRequest).build())
                                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
                             });
                 })

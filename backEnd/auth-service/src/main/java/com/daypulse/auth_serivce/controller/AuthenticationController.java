@@ -1,20 +1,13 @@
 package com.daypulse.auth_serivce.controller;
 
-import com.daypulse.auth_serivce.dto.request.AuthenticationRequest;
-import com.daypulse.auth_serivce.dto.request.IntrospectRequest;
-import com.daypulse.auth_serivce.dto.request.LogoutRequest;
-import com.daypulse.auth_serivce.dto.request.RefreshTokenRequest;
-import com.daypulse.auth_serivce.dto.response.ApiBaseResponse;
-import com.daypulse.auth_serivce.dto.response.AuthenticationResponse;
-import com.daypulse.auth_serivce.dto.response.IntrospectResponse;
+import com.daypulse.auth_serivce.dto.request.*;
+import com.daypulse.auth_serivce.dto.response.*;
 import com.daypulse.auth_serivce.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,19 +16,24 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     AuthenticationService authenticationService;
 
-    @PostMapping("/token")
-    public ApiBaseResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest authenticationRequest) {
-        var result = authenticationService.authenticate(authenticationRequest);
+    @PostMapping("/register")
+    public ApiBaseResponse<RegisterResponse> register(@RequestBody @Valid RegisterRequest request) {
+        var result = authenticationService.register(request);
+        return ApiBaseResponse.<RegisterResponse>builder()
+                .result(result)
+                .build();
+    }
+
+    @PostMapping("/login")
+    public ApiBaseResponse<AuthenticationResponse> login(@RequestBody @Valid LoginRequest request) {
+        var result = authenticationService.authenticate(request);
         return ApiBaseResponse.<AuthenticationResponse>builder()
-                .result(AuthenticationResponse.builder()
-                        .authenticated(result.isAuthenticated())
-                        .token(result.getToken())
-                        .build())
+                .result(result)
                 .build();
     }
 
     @PostMapping("/introspect")
-    ApiBaseResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest introspectRequest) {
+    public ApiBaseResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest introspectRequest) {
         var result = authenticationService.introspect(introspectRequest);
         return ApiBaseResponse.<IntrospectResponse>builder()
                 .result(result)
@@ -43,17 +41,31 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    ApiBaseResponse<Void> logout(@RequestBody LogoutRequest logoutRequest) throws Exception {
+    public ApiBaseResponse<Void> logout(@RequestBody LogoutRequest logoutRequest) throws Exception {
         authenticationService.logout(logoutRequest.getToken());
         return ApiBaseResponse.<Void>builder().build();
     }
 
-    @PostMapping("/refresh-token")
-    public ApiBaseResponse<AuthenticationResponse> refreshToken
-            (@RequestBody RefreshTokenRequest request) throws Exception {
+    @PostMapping("/refresh")
+    public ApiBaseResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshTokenRequest request) throws Exception {
         var result = authenticationService.refreshToken(request);
         return ApiBaseResponse.<AuthenticationResponse>builder()
                 .result(result)
                 .build();
+    }
+
+    // TODO: [FUTURE-EMAIL] Implement OTP verification endpoint
+    @PostMapping("/verify-otp")
+    public ApiBaseResponse<AuthenticationResponse> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
+        var result = authenticationService.verifyOtp(request);
+        return ApiBaseResponse.<AuthenticationResponse>builder()
+                .result(result)
+                .build();
+    }
+
+    // TODO: [FUTURE-EMAIL] Implement forgot password endpoint
+    @PostMapping("/forgot-password")
+    public ApiBaseResponse<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
+        return authenticationService.forgotPassword(request);
     }
 }
