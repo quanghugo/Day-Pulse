@@ -1,6 +1,5 @@
 package com.daypulse.auth_serivce.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -13,15 +12,17 @@ import java.util.Objects;
 
 public class CustomJwtDecoder implements JwtDecoder {
 
-    @Value("${jwt.signing-key}")
-    private String SIGNING_KEY;
-
+    private final String signingKey;
     private NimbusJwtDecoder nimbusJwtDecoder = null;
+
+    public CustomJwtDecoder(String signingKey) {
+        this.signingKey = signingKey;
+    }
 
     @Override
     public Jwt decode(String token) throws JwtException {
         if (Objects.isNull(nimbusJwtDecoder)) {
-            byte[] keyBytes = Base64.getDecoder().decode(SIGNING_KEY);
+            byte[] keyBytes = Base64.getDecoder().decode(signingKey);
             SecretKeySpec secretKey = new SecretKeySpec(keyBytes, "HmacSHA512");
             nimbusJwtDecoder = NimbusJwtDecoder
                     .withSecretKey(secretKey)

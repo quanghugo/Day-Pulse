@@ -1,0 +1,28 @@
+meta {
+  name: Get Available Users
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url}}/users/available
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{user1_access_token}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('Retrieved available users successfully', () => {
+          expect(jsonData.result).to.not.be.null;
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

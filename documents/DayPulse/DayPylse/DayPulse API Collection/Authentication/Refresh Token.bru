@@ -1,0 +1,41 @@
+meta {
+  name: Refresh Token
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{base_url}}/auth/refresh
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "token": "{{user1_refresh_token}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      if (jsonData.result && jsonData.result.tokens) {
+          bru.setEnvVar('user1_access_token', jsonData.result.tokens.accessToken);
+          bru.setEnvVar('user1_refresh_token', jsonData.result.tokens.refreshToken);
+          
+          test('Token refreshed successfully', () => {
+              expect(jsonData.result.tokens.accessToken).to.not.be.null;
+          });
+          
+          console.log('New Access Token:', jsonData.result.tokens.accessToken.substring(0, 50) + '...');
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

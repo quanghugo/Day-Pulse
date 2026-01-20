@@ -1,0 +1,37 @@
+meta {
+  name: Register User 2
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "jane.smith@example.com",
+    "password": "password456"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      if (jsonData.result && jsonData.result.success) {
+          test('User 2 registered successfully', () => {
+              expect(jsonData.result.success).to.be.true;
+          });
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

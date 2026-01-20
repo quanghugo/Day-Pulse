@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "DayPulse API Collection",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

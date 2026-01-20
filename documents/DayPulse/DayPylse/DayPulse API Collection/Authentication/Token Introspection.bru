@@ -1,0 +1,36 @@
+meta {
+  name: Token Introspection
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/auth/introspect
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "token": "{{user1_access_token}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      if (jsonData.result) {
+          test('Token is valid', () => {
+              expect(jsonData.result.valid).to.be.true;
+          });
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

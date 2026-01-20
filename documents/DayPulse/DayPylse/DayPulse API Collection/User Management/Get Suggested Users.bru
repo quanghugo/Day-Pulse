@@ -1,0 +1,28 @@
+meta {
+  name: Get Suggested Users
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/users/suggested
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{user1_access_token}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('Retrieved suggested users successfully', () => {
+          expect(jsonData.result).to.not.be.null;
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

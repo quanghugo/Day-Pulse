@@ -1,0 +1,36 @@
+meta {
+  name: Update My Profile (User 1)
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/users/me
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{user1_access_token}}
+}
+
+body:json {
+  {
+    "bio": "Updated bio - Full stack developer",
+    "timezone": "Asia/Ho_Chi_Minh"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('User 1 profile updated successfully', () => {
+          expect(jsonData.result.bio).to.include('Full stack developer');
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Get My Profile (User 1)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/users/me
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{user1_access_token}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('Retrieved User 1 profile successfully', () => {
+          expect(jsonData.result.id).to.not.be.null;
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

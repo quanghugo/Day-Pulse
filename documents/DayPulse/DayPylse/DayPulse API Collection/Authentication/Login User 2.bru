@@ -1,0 +1,44 @@
+meta {
+  name: Login User 2
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "jane.smith@example.com",
+    "password": "password456"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      if (jsonData.result && jsonData.result.tokens) {
+          bru.setEnvVar('user2_access_token', jsonData.result.tokens.accessToken);
+          bru.setEnvVar('user2_refresh_token', jsonData.result.tokens.refreshToken);
+          bru.setEnvVar('user2_id', jsonData.result.user.id);
+          
+          test('User 2 logged in successfully', () => {
+              expect(jsonData.result.tokens.accessToken).to.not.be.null;
+          });
+          
+          console.log('User2 ID:', jsonData.result.user.id);
+          console.log('Access Token:', jsonData.result.tokens.accessToken.substring(0, 50) + '...');
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

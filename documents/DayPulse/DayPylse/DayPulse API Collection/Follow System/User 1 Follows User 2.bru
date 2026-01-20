@@ -1,0 +1,28 @@
+meta {
+  name: User 1 Follows User 2
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/users/{{user2_id}}/follow
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{user1_access_token}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('User 1 followed User 2 successfully', () => {
+          expect(jsonData.result.success).to.be.true;
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

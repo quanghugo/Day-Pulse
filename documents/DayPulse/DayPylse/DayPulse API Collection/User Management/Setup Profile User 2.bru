@@ -1,0 +1,37 @@
+meta {
+  name: Setup Profile User 2
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/users/me/setup
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{user2_access_token}}
+}
+
+body:json {
+  {
+    "username": "janesmith",
+    "name": "Jane Smith",
+    "bio": "Designer and creative thinker"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('User 2 profile setup successfully', () => {
+          expect(jsonData.result.username).to.equal('janesmith');
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}
