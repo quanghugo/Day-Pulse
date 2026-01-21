@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8180
   servlet:
     context-path: /auth-service
 
@@ -7,7 +7,7 @@ spring:
   datasource:
     url: "jdbc:postgresql://localhost:5432/auth-service"
     username: postgres
-    password: postgres
+    password: 123456
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

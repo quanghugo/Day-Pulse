@@ -24,10 +24,13 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/users",
-            "/auth/token",
+            "/auth/register",
+            "/auth/login",
             "/auth/introspect",
             "/auth/logout",
-            "/auth/refresh-token"
+            "/auth/refresh",
+            "/auth/verify-otp",
+            "/auth/forgot-password"
     };
 
     @Bean
