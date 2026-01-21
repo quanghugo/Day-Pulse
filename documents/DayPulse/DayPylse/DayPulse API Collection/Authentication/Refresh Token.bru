@@ -1,7 +1,7 @@
 meta {
   name: Refresh Token
   type: http
-  seq: 6
+  seq: 4
 }
 
 post {
@@ -15,8 +15,12 @@ headers {
 }
 
 body:json {
+  // {
+  //   "token": "{{user1_refresh_token}}"
+  // }
+  
   {
-    "token": "{{user1_refresh_token}}"
+    "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsImlzcyI6ImRheXB1bHNlLWF1dGgtc2VydmljZSIsImV4cCI6MTc2OTAxNjEyOSwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3Njg5ODAxMjksInVzZXJJZCI6ImIzN2E3YTE2LTE5MGUtNDA2Yi04MTY2LWExY2JiZDQyNzA0NSIsImp0aSI6IjdiZDFjMGUzLTQ1NzYtNGRhZi05Y2RiLWU4YzFjMGZmMGQzNyJ9.NKCzZ8pqnbFzGg1PahfkV5DQwiK4VG5UnuoAOFE4zqKY19W00cGPtsSab2oTtfCy2Ar35lexMsmQGF-P2N0jcg"
   }
 }
 
@@ -38,4 +42,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

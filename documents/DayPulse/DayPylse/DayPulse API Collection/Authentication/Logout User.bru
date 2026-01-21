@@ -1,0 +1,40 @@
+meta {
+  name: Logout User
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/auth/logout
+  body: none
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsInNjb3BlIjoiIiwiaXNzIjoiZGF5cHVsc2UtYXV0aC1zZXJ2aWNlIiwiZXhwIjoxNzY4OTgzOTI4LCJpYXQiOjE3Njg5ODAzMjgsInVzZXJJZCI6ImIzN2E3YTE2LTE5MGUtNDA2Yi04MTY2LWExY2JiZDQyNzA0NSIsImp0aSI6ImE5YzAxYTRlLTc3ZTQtNGYxZi05Yzg5LWJhN2Y3N2JlOWNkZiJ9.RMuw7sPiK9zzq4I1WOWT0mxOK4gdL5V-hue8GijNw0Ltz_1ZyzcDmPxJUSOO-JySF9Mbv1l_WMYU7P2i9WiNHw
+}
+
+body:json {
+  // // {
+  // //   "token": "{{user1_access_token}}"
+  // // }
+  
+  // {
+  //   "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsInNjb3BlIjoiIiwiaXNzIjoiZGF5cHVsc2UtYXV0aC1zZXJ2aWNlIiwiZXhwIjoxNzY4OTgzOTI4LCJpYXQiOjE3Njg5ODAzMjgsInVzZXJJZCI6ImIzN2E3YTE2LTE5MGUtNDA2Yi04MTY2LWExY2JiZDQyNzA0NSIsImp0aSI6ImE5YzAxYTRlLTc3ZTQtNGYxZi05Yzg5LWJhN2Y3N2JlOWNkZiJ9.RMuw7sPiK9zzq4I1WOWT0mxOK4gdL5V-hue8GijNw0Ltz_1ZyzcDmPxJUSOO-JySF9Mbv1l_WMYU7P2i9WiNHw"
+  // }
+}
+
+script:post-response {
+  test('User 1 logged out', () => {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

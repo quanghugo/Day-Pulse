@@ -1,7 +1,7 @@
 meta {
-  name: Login User 2
+  name: Login User
   type: http
-  seq: 4
+  seq: 2
 }
 
 post {
@@ -16,8 +16,8 @@ headers {
 
 body:json {
   {
-    "email": "jane.smith@example.com",
-    "password": "password456"
+    "email": "test@gmail.com",
+    "password": "password123"
   }
 }
 
@@ -25,15 +25,15 @@ script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       if (jsonData.result && jsonData.result.tokens) {
-          bru.setEnvVar('user2_access_token', jsonData.result.tokens.accessToken);
-          bru.setEnvVar('user2_refresh_token', jsonData.result.tokens.refreshToken);
-          bru.setEnvVar('user2_id', jsonData.result.user.id);
+          bru.setEnvVar('user1_access_token', jsonData.result.tokens.accessToken);
+          bru.setEnvVar('user1_refresh_token', jsonData.result.tokens.refreshToken);
+          bru.setEnvVar('user1_id', jsonData.result.user.id);
           
-          test('User 2 logged in successfully', () => {
+          test('User 1 logged in successfully', () => {
               expect(jsonData.result.tokens.accessToken).to.not.be.null;
           });
           
-          console.log('User2 ID:', jsonData.result.user.id);
+          console.log('User1 ID:', jsonData.result.user.id);
           console.log('Access Token:', jsonData.result.tokens.accessToken.substring(0, 50) + '...');
       }
   }
@@ -41,4 +41,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

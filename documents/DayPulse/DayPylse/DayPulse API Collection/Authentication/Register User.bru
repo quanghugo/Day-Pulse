@@ -1,7 +1,7 @@
 meta {
-  name: Register User 2
+  name: Register User
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -16,8 +16,8 @@ headers {
 
 body:json {
   {
-    "email": "jane.smith@example.com",
-    "password": "password456"
+    "email": "test@gmail.com",
+    "password": "password123"
   }
 }
 
@@ -25,7 +25,7 @@ script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       if (jsonData.result && jsonData.result.success) {
-          test('User 2 registered successfully', () => {
+          test('User 1 registered successfully', () => {
               expect(jsonData.result.success).to.be.true;
           });
       }
@@ -34,4 +34,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
