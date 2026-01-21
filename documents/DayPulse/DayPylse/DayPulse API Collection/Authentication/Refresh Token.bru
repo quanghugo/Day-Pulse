@@ -14,13 +14,26 @@ headers {
   Content-Type: application/json
 }
 
-body:json {
-  // {
-  //   "token": "{{user1_refresh_token}}"
-  // }
+docs {
+  OAuth 2.0 Token Refresh
   
+  Generates a new access token using a valid refresh token.
+  Implements token rotation - old refresh token is revoked, new one issued.
+  
+  Request:
+  - token: Valid refresh token
+  
+  Response:
+  - New access token (1 hour validity)
+  - New refresh token (10 hours validity)
+  - Token rotation ensures security
+  
+  Note: In production, prefer HttpOnly cookies for refresh tokens
+}
+
+body:json {
   {
-    "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsImlzcyI6ImRheXB1bHNlLWF1dGgtc2VydmljZSIsImV4cCI6MTc2OTAxNjEyOSwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3Njg5ODAxMjksInVzZXJJZCI6ImIzN2E3YTE2LTE5MGUtNDA2Yi04MTY2LWExY2JiZDQyNzA0NSIsImp0aSI6IjdiZDFjMGUzLTQ1NzYtNGRhZi05Y2RiLWU4YzFjMGZmMGQzNyJ9.NKCzZ8pqnbFzGg1PahfkV5DQwiK4VG5UnuoAOFE4zqKY19W00cGPtsSab2oTtfCy2Ar35lexMsmQGF-P2N0jcg"
+    "token": "{{user1_refresh_token}}"
   }
 }
 
@@ -28,6 +41,7 @@ script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       if (jsonData.result && jsonData.result.tokens) {
+          // Store new tokens (token rotation)
           bru.setEnvVar('user1_access_token', jsonData.result.tokens.accessToken);
           bru.setEnvVar('user1_refresh_token', jsonData.result.tokens.refreshToken);
           
@@ -35,7 +49,12 @@ script:post-response {
               expect(jsonData.result.tokens.accessToken).to.not.be.null;
           });
           
+          test('New refresh token issued (rotation)', () => {
+              expect(jsonData.result.tokens.refreshToken).to.not.be.null;
+          });
+          
           console.log('New Access Token:', jsonData.result.tokens.accessToken.substring(0, 50) + '...');
+          console.log('Old refresh token revoked, new one issued');
       }
   }
 }

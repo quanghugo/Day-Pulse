@@ -1,0 +1,67 @@
+meta {
+  name: Signup User
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/auth/signup
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "newuser@gmail.com",
+    "password": "password123"
+  }
+}
+
+docs {
+  OAuth 2.0 Standard Endpoint
+  
+  Creates a new user account using the standardized /auth/signup endpoint.
+  This is the preferred endpoint over /auth/register (deprecated).
+  
+  Request:
+  - email: User's email address
+  - password: User's password (will be hashed with BCrypt)
+  
+  Response:
+  - result.success: Boolean indicating successful registration
+  - result.userId: UUID of newly created user
+  - result.email: Registered email address
+  - (Optional) result.tokens: Auto-login tokens if enabled
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      if (jsonData.result && jsonData.result.success) {
+          test('User signed up successfully', () => {
+              expect(jsonData.result.success).to.be.true;
+          });
+          
+          // Store user ID if needed
+          if (jsonData.result.userId) {
+              console.log('New User ID:', jsonData.result.userId);
+          }
+          
+          // If auto-login tokens are provided, store them
+          if (jsonData.result.tokens) {
+              bru.setEnvVar('user1_access_token', jsonData.result.tokens.accessToken);
+              bru.setEnvVar('user1_refresh_token', jsonData.result.tokens.refreshToken);
+              console.log('Auto-login tokens received');
+          }
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

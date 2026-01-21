@@ -14,12 +14,23 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Get User Profile by ID (Protected Endpoint)
+  
+  Returns any user's public profile information by their UUID.
+  Useful for viewing other users' profiles.
+  
+  Requires authentication to access.
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('Retrieved User 2 profile by ID successfully', () => {
           expect(jsonData.result.id).to.equal(bru.getEnvVar('user2_id'));
       });
+      
+      console.log('User 2 profile:', jsonData.result);
   }
 }
 

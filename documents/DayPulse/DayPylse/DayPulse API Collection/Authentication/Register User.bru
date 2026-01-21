@@ -1,7 +1,7 @@
 meta {
-  name: Register User
+  name: Register User (Deprecated)
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -12,6 +12,13 @@ post {
 
 headers {
   Content-Type: application/json
+}
+
+docs {
+  DEPRECATED: Use /auth/signup instead
+  
+  This endpoint is kept for backward compatibility only.
+  New implementations should use the /auth/signup endpoint.
 }
 
 body:json {

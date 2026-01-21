@@ -14,12 +14,27 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Follow User (Protected Endpoint)
+  
+  Creates a follow relationship between authenticated user and target user.
+  Integrated into User Service (not a separate Follow Service).
+  
+  Endpoint: POST /users/{id}/follow
+  - {id}: UUID of user to follow
+  
+  Gateway extracts follower ID from JWT and forwards as X-User-Id.
+  Updates follower/following counts for both users.
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('User 1 followed User 2 successfully', () => {
           expect(jsonData.result.success).to.be.true;
       });
+      
+      console.log('Follow relationship created');
   }
 }
 

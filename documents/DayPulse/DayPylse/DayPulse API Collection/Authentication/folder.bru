@@ -6,3 +6,22 @@ meta {
 auth {
   mode: inherit
 }
+
+docs {
+  # Authentication Endpoints
+  
+  OAuth 2.0 compliant authentication using JWT Bearer tokens.
+  
+  ## Public Endpoints (No Authentication)
+  - Signup User - Create account using standard `/auth/signup` endpoint
+  - Register User (Deprecated) - Backward compatible `/auth/register`
+  - Login User 1 & 2 - Authenticate and receive tokens
+  - Refresh Token - Renew access token using refresh token
+  - Token Introspection - Validate token status
+  
+  ## Protected Endpoints (Requires Bearer Token)
+  - Logout User - Revoke tokens
+  - Try Access After Logout - Verify token revocation works
+  
+  All responses follow OAuth 2.0 standards with `expiresIn` and `tokenType` fields.
+}

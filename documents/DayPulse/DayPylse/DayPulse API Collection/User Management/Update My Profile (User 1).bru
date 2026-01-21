@@ -15,6 +15,15 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Update Current User Profile (Protected Endpoint)
+  
+  Partially updates the authenticated user's profile.
+  Uses PATCH method for partial updates (REST standard).
+  
+  All fields are optional - only provided fields are updated.
+}
+
 body:json {
   {
     "bio": "Updated bio - Full stack developer",

@@ -15,6 +15,24 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Setup User Profile (Protected Endpoint)
+  
+  Complete user profile setup after registration.
+  Requires Bearer token authentication.
+  
+  Request:
+  - username: Unique username for the user
+  - name: Display name
+  - bio: User biography
+  
+  Flow:
+  1. Client sends Authorization: Bearer <token>
+  2. Gateway validates JWT and extracts userId
+  3. Gateway forwards request with X-User-Id header
+  4. User Service creates/updates profile
+}
+
 body:json {
   {
     "username": "johndoe",

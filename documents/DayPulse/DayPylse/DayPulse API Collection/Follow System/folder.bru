@@ -6,3 +6,23 @@ meta {
 auth {
   mode: inherit
 }
+
+docs {
+  # Follow System Endpoints
+  
+  All endpoints require Bearer token authentication.
+  Follow system is integrated into User Service (not a separate microservice).
+  
+  ## Follow Operations
+  - User 1 Follows User 2 - Create follow relationship (POST)
+  - User 1 Unfollows User 2 - Remove follow relationship (DELETE)
+  
+  ## Follow Lists (Paginated)
+  - Get User's Followers - List of users following the specified user
+  - Get User's Following - List of users the specified user follows
+  
+  Both list endpoints return Page<UserSummaryResponse> with pagination metadata.
+  Query params: page (0-based), size (default 20)
+  
+  Follower/following counts are automatically updated on follow/unfollow operations.
+}

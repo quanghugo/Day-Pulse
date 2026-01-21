@@ -1,7 +1,7 @@
 meta {
   name: Login User
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -21,6 +21,19 @@ body:json {
   }
 }
 
+docs {
+  OAuth 2.0 Compliant Authentication
+  
+  Authenticates user with email and password.
+  Returns access token and refresh token following OAuth 2.0 standards.
+  
+  Response includes:
+  - accessToken: JWT for API authentication (1 hour validity)
+  - refreshToken: Token for renewing access token (10 hours validity)
+  - expiresIn: Token expiration in seconds
+  - tokenType: "Bearer" (OAuth 2.0 standard)
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
@@ -33,8 +46,18 @@ script:post-response {
               expect(jsonData.result.tokens.accessToken).to.not.be.null;
           });
           
+          // Verify OAuth 2.0 compliance
+          test('Token response includes expiresIn', () => {
+              expect(jsonData.result.tokens.expiresIn).to.not.be.undefined;
+          });
+          
+          test('Token response includes tokenType', () => {
+              expect(jsonData.result.tokens.tokenType).to.equal('Bearer');
+          });
+          
           console.log('User1 ID:', jsonData.result.user.id);
           console.log('Access Token:', jsonData.result.tokens.accessToken.substring(0, 50) + '...');
+          console.log('Expires In:', jsonData.result.tokens.expiresIn, 'seconds');
       }
   }
 }

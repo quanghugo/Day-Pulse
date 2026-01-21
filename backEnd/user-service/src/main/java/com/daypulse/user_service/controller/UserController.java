@@ -25,6 +25,12 @@ public class UserController {
     private final UserProfileService userProfileService;
     private final FollowService followService;
 
+    /**
+     * POST /users/me/setup - Protected endpoint
+     * STANDARD: Client sends Authorization: Bearer <token> to API Gateway
+     * Gateway extracts userId from JWT and forwards as X-User-Id header
+     * Sets up user profile after registration
+     */
     @PostMapping("/me/setup")
     public ApiResponse<UserResponse> setupProfile(
             @RequestHeader("X-User-Id") String userId,
@@ -36,6 +42,12 @@ public class UserController {
                 .build();
     }
 
+    /**
+     * GET /users/me - Protected endpoint
+     * STANDARD: Client sends Authorization: Bearer <token> to API Gateway
+     * Gateway extracts userId from JWT and forwards as X-User-Id header
+     * Returns current user's profile
+     */
     @GetMapping("/me")
     public ApiResponse<UserResponse> getMyProfile(@RequestHeader("X-User-Id") String userId) {
         UserResponse response = userProfileService.getMyProfile(UUID.fromString(userId));
@@ -44,6 +56,12 @@ public class UserController {
                 .build();
     }
 
+    /**
+     * PATCH /users/me - Protected endpoint
+     * STANDARD: Client sends Authorization: Bearer <token> to API Gateway
+     * Gateway extracts userId from JWT and forwards as X-User-Id header
+     * Updates current user's profile
+     */
     @PatchMapping("/me")
     public ApiResponse<UserResponse> updateMyProfile(
             @RequestHeader("X-User-Id") String userId,

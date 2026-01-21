@@ -20,10 +20,15 @@ import java.util.UUID;
 public class UserController {
     UserService userService;
 
-    // NOTE: User registration has been moved to /auth/register
+    // NOTE: User registration has been moved to /auth/signup
     // NOTE: User profile management (CRUD) has been moved to User Service
     // This controller only keeps minimal auth-related user operations
 
+    /**
+     * GET /users/my-info - Protected endpoint
+     * STANDARD: Requires Authorization: Bearer <access_token> header
+     * Returns current authenticated user's basic auth info
+     */
     @GetMapping("/my-info")
     @PreAuthorize("isAuthenticated()")
     public ApiBaseResponse<UserResponse> getMyInfo() {
@@ -32,6 +37,11 @@ public class UserController {
                 .build();
     }
 
+    /**
+     * GET /users/{userId} - Protected endpoint
+     * STANDARD: Requires Authorization: Bearer <access_token> header
+     * Returns user's basic auth info by ID (for admin or authorized users)
+     */
     @GetMapping("/{userId}")
     @PreAuthorize("isAuthenticated()")
     public ApiBaseResponse<UserResponse> getUser(@PathVariable UUID userId) {

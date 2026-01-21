@@ -14,12 +14,24 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Get Suggested Users (Protected Endpoint)
+  
+  Returns a list of suggested users to follow.
+  Algorithm may be based on mutual connections, interests, or popularity.
+  
+  Returns array of UserSummaryResponse objects.
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('Retrieved suggested users successfully', () => {
           expect(jsonData.result).to.not.be.null;
+          expect(Array.isArray(jsonData.result)).to.be.true;
       });
+      
+      console.log('Suggested users count:', jsonData.result.length);
   }
 }
 

@@ -26,7 +26,7 @@ public class AuthServiceClient {
         IntrospectRequest request = IntrospectRequest.builder().token(token).build();
         return webClientBuilder.build()
                 .post()
-                .uri(authServiceUrl + "/auth/introspect")
+                .uri(authServiceUrl + "/auth-service/auth/introspect")
                 .header("Content-Type", "application/json")
                 .bodyValue(request)
                 .retrieve()

@@ -14,12 +14,23 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Get Current User Profile (Protected Endpoint)
+  
+  Returns the authenticated user's profile.
+  Uses OAuth 2.0 Bearer token authentication.
+  
+  Gateway extracts userId from JWT and forwards to User Service.
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('Retrieved User 1 profile successfully', () => {
           expect(jsonData.result.id).to.not.be.null;
       });
+      
+      console.log('User profile:', jsonData.result);
   }
 }
 

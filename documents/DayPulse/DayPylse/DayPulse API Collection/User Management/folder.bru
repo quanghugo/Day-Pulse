@@ -6,3 +6,21 @@ meta {
 auth {
   mode: inherit
 }
+
+docs {
+  # User Management Endpoints
+  
+  All endpoints in this folder require Bearer token authentication.
+  
+  ## Profile Management
+  - Setup Profile - Complete profile after registration
+  - Get My Profile - Retrieve current user's profile
+  - Update My Profile - Partial update using PATCH
+  - Get User by ID - View other users' profiles
+  
+  ## User Discovery
+  - Get Suggested Users - Recommended users to follow
+  - Get Available Users - All active users in system
+  
+  Gateway extracts userId from JWT and forwards to User Service via X-User-Id header.
+}

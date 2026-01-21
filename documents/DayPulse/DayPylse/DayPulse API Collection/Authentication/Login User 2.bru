@@ -1,0 +1,60 @@
+meta {
+  name: Login User 2
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+docs {
+  OAuth 2.0 Compliant Authentication - User 2
+  
+  Login second user for testing follow/unfollow functionality.
+  Same authentication flow as User 1.
+}
+
+body:json {
+  {
+    "email": "test2@gmail.com",
+    "password": "password123"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      if (jsonData.result && jsonData.result.tokens) {
+          bru.setEnvVar('user2_access_token', jsonData.result.tokens.accessToken);
+          bru.setEnvVar('user2_refresh_token', jsonData.result.tokens.refreshToken);
+          bru.setEnvVar('user2_id', jsonData.result.user.id);
+          
+          test('User 2 logged in successfully', () => {
+              expect(jsonData.result.tokens.accessToken).to.not.be.null;
+          });
+          
+          test('Token response includes expiresIn', () => {
+              expect(jsonData.result.tokens.expiresIn).to.not.be.undefined;
+          });
+          
+          test('Token response includes tokenType', () => {
+              expect(jsonData.result.tokens.tokenType).to.equal('Bearer');
+          });
+          
+          console.log('User2 ID:', jsonData.result.user.id);
+          console.log('Access Token:', jsonData.result.tokens.accessToken.substring(0, 50) + '...');
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

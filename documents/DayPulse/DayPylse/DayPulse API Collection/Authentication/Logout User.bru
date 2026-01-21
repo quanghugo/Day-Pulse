@@ -15,23 +15,33 @@ headers {
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsInNjb3BlIjoiIiwiaXNzIjoiZGF5cHVsc2UtYXV0aC1zZXJ2aWNlIiwiZXhwIjoxNzY4OTgzOTI4LCJpYXQiOjE3Njg5ODAzMjgsInVzZXJJZCI6ImIzN2E3YTE2LTE5MGUtNDA2Yi04MTY2LWExY2JiZDQyNzA0NSIsImp0aSI6ImE5YzAxYTRlLTc3ZTQtNGYxZi05Yzg5LWJhN2Y3N2JlOWNkZiJ9.RMuw7sPiK9zzq4I1WOWT0mxOK4gdL5V-hue8GijNw0Ltz_1ZyzcDmPxJUSOO-JySF9Mbv1l_WMYU7P2i9WiNHw
+  token: {{user1_access_token}}
 }
 
-body:json {
-  // // {
-  // //   "token": "{{user1_access_token}}"
-  // // }
+docs {
+  OAuth 2.0 Standard Logout
   
-  // {
-  //   "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsInNjb3BlIjoiIiwiaXNzIjoiZGF5cHVsc2UtYXV0aC1zZXJ2aWNlIiwiZXhwIjoxNzY4OTgzOTI4LCJpYXQiOjE3Njg5ODAzMjgsInVzZXJJZCI6ImIzN2E3YTE2LTE5MGUtNDA2Yi04MTY2LWExY2JiZDQyNzA0NSIsImp0aSI6ImE5YzAxYTRlLTc3ZTQtNGYxZi05Yzg5LWJhN2Y3N2JlOWNkZiJ9.RMuw7sPiK9zzq4I1WOWT0mxOK4gdL5V-hue8GijNw0Ltz_1ZyzcDmPxJUSOO-JySF9Mbv1l_WMYU7P2i9WiNHw"
-  // }
+  Revokes user's refresh tokens and optionally blacklists the access token.
+  Requires Authorization: Bearer <access_token> header (RFC 6750).
+  
+  After logout:
+  - Refresh tokens are deleted from database
+  - Access token may be blacklisted (if Redis is configured)
+  - User must login again to get new tokens
 }
 
 script:post-response {
-  test('User 1 logged out', () => {
-      expect(res.getStatus()).to.equal(200);
-  });
+  if (res.getStatus() === 200) {
+      test('User 1 logged out successfully', () => {
+          expect(res.getStatus()).to.equal(200);
+      });
+      
+      // Clear stored tokens after logout
+      bru.setEnvVar('user1_access_token', '');
+      bru.setEnvVar('user1_refresh_token', '');
+      
+      console.log('User 1 tokens cleared');
+  }
 }
 
 settings {

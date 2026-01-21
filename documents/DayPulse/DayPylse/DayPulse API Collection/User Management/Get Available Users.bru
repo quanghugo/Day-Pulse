@@ -14,12 +14,24 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Get Available Users (Protected Endpoint)
+  
+  Returns a list of all available/active users in the system.
+  Useful for user discovery and search functionality.
+  
+  Returns array of UserSummaryResponse objects.
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('Retrieved available users successfully', () => {
           expect(jsonData.result).to.not.be.null;
+          expect(Array.isArray(jsonData.result)).to.be.true;
       });
+      
+      console.log('Available users count:', jsonData.result.length);
   }
 }
 

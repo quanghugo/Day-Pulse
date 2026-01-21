@@ -19,13 +19,31 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Get User's Followers (Protected Endpoint)
+  
+  Returns paginated list of users following the specified user.
+  Integrated into User Service.
+  
+  Endpoint: GET /users/{id}/followers
+  Query params:
+  - page: Page number (0-based)
+  - size: Items per page
+  
+  Returns Page<UserSummaryResponse> with pagination metadata.
+}
+
 script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('Retrieved User 2\'s followers successfully', () => {
           expect(jsonData.result).to.not.be.null;
+          expect(jsonData.result.content).to.be.an('array');
       });
+      
       console.log('Total followers:', jsonData.result.totalElements);
+      console.log('Current page:', jsonData.result.number);
+      console.log('Page size:', jsonData.result.size);
   }
 }
 

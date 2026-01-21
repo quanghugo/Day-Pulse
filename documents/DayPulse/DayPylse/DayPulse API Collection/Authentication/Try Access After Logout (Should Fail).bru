@@ -1,7 +1,7 @@
 meta {
   name: Try Access After Logout (Should Fail)
   type: http
-  seq: 6
+  seq: 7
 }
 
 get {
@@ -14,11 +14,27 @@ headers {
   Authorization: Bearer {{user1_access_token}}
 }
 
+docs {
+  Test Token Revocation
+  
+  This request should fail with 401 Unauthenticated after logout.
+  Demonstrates that token revocation is working correctly.
+  
+  Expected behavior:
+  - Status: 401 or 403
+  - Message: "Unauthenticated" or similar
+  - Access denied to protected resource
+}
+
 script:post-response {
   test('Token correctly invalidated after logout', () => {
-      const jsonData = res.getBody();
-      expect(jsonData.result).to.be.undefined;
+      const status = res.getStatus();
+      // Should be unauthorized (401) or forbidden (403)
+      expect(status === 401 || status === 403).to.be.true;
   });
+  
+  console.log('Response status:', res.getStatus());
+  console.log('Token successfully revoked - access denied as expected');
 }
 
 settings {

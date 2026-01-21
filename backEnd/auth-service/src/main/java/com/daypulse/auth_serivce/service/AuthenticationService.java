@@ -91,10 +91,28 @@ public class AuthenticationService {
         // saveOtpCode(user, otpCode, "email_verify");
         // emailService.sendVerificationEmail(user.getEmail(), otpCode);
 
+        // Basic response without auto-login
+        // For auto-login after registration, uncomment the token generation below
         return RegisterResponse.builder()
                 .success(true)
+                .userId(user.getId())
                 .email(user.getEmail())
                 .build();
+        
+        // Optional: Auto-login after registration
+        // String accessToken = generateAccessToken(user);
+        // String refreshToken = generateRefreshToken(user);
+        // saveRefreshToken(user, refreshToken);
+        // return RegisterResponse.builder()
+        //         .success(true)
+        //         .userId(user.getId())
+        //         .email(user.getEmail())
+        //         .user(userMapper.toUserSummary(user))
+        //         .tokens(TokenPair.builder()
+        //                 .accessToken(accessToken)
+        //                 .refreshToken(refreshToken)
+        //                 .build())
+        //         .build();
     }
 
     public AuthenticationResponse authenticate(LoginRequest request) {
@@ -122,6 +140,8 @@ public class AuthenticationService {
                 .tokens(TokenPair.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
+                        .expiresIn(VALID_DURATION)
+                        .tokenType("Bearer")
                         .build())
                 .build();
     }
@@ -206,6 +226,8 @@ public class AuthenticationService {
                 .tokens(TokenPair.builder()
                         .accessToken(newAccessToken)
                         .refreshToken(newRefreshToken)
+                        .expiresIn(VALID_DURATION)
+                        .tokenType("Bearer")
                         .build())
                 .build();
     }

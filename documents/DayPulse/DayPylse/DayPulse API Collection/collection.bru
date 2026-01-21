@@ -7,18 +7,90 @@ auth {
 }
 
 vars:pre-request {
-  base_url: http://localhost:8888/api/v1
+  base_url: http://localhost:8188/api/v1
 }
 
 docs {
-  Complete API testing collection for DayPulse Backend
+  # DayPulse Backend API Collection
   
-  Test Flow:
-  1. Register two users
-  2. Login both users
-  3. Setup profiles
-  4. Follow/Unfollow operations
-  5. View followers/following
-  6. Token operations
-  7. Logout
+  Complete API testing collection for DayPulse microservices backend.
+  
+  ## OAuth 2.0 Authentication
+  
+  This API uses OAuth 2.0 Bearer token authentication following RFC 6750:
+  - **Access Tokens**: Short-lived JWT (1 hour) sent in Authorization header
+  - **Refresh Tokens**: Long-lived token (10 hours) for renewing access tokens
+  - **Token Type**: Bearer (OAuth 2.0 standard)
+  
+  ### Authentication Flow
+  1. Sign up or register a new account (`POST /auth/signup`)
+  2. Login with credentials (`POST /auth/login`)
+  3. Receive access token and refresh token in response
+  4. Include access token in all protected requests: `Authorization: Bearer <token>`
+  5. Refresh token when access token expires (`POST /auth/refresh`)
+  6. Logout to revoke tokens (`POST /auth/logout`)
+  
+  ## API Architecture
+  
+  - **API Gateway** (Port 8188): Routes requests and validates JWT tokens
+  - **Auth Service** (Port 8180): Handles authentication and user accounts
+  - **User Service** (Port 8181): Manages user profiles and follow system
+  
+  ## Test Flow
+  
+  ### Complete End-to-End Test Sequence:
+  
+  1. **Authentication**
+     - Signup User 1 (`/auth/signup`)
+     - Register User 2 (`/auth/register` - deprecated but functional)
+     - Login both users (store tokens)
+     - Introspect token to verify validity
+  
+  2. **User Profiles**
+     - Get User 1's profile (`/users/me`)
+     - Setup User 1's profile (`/users/me/setup`)
+     - Setup User 2's profile
+     - Update User 1's profile (`PATCH /users/me`)
+     - Get User 2 by ID
+  
+  3. **User Discovery**
+     - Get suggested users
+     - Get available users
+  
+  4. **Follow System**
+     - User 1 follows User 2 (`POST /users/{id}/follow`)
+     - Get User 2's followers
+     - Get User 1's following list
+     - User 1 unfollows User 2 (`DELETE /users/{id}/follow`)
+  
+  5. **Token Management**
+     - Refresh access token (`/auth/refresh`)
+     - Logout User 1 (`/auth/logout`)
+     - Try accessing protected endpoint (should fail)
+  
+  ## Environment Variables
+  
+  The collection uses these environment variables (auto-populated from responses):
+  - `base_url`: API Gateway base URL
+  - `user1_access_token`: User 1's JWT access token
+  - `user1_refresh_token`: User 1's refresh token
+  - `user2_access_token`: User 2's JWT access token
+  - `user2_refresh_token`: User 2's refresh token
+  - `user1_id`: User 1's UUID
+  - `user2_id`: User 2's UUID
+  
+  ## Standards Compliance
+  
+  - ✅ OAuth 2.0 Bearer Token Usage (RFC 6750)
+  - ✅ RESTful API design principles
+  - ✅ JWT authentication with token rotation
+  - ✅ Proper HTTP methods (GET, POST, PATCH, DELETE)
+  - ✅ Pagination for list endpoints
+  - ✅ Standardized error responses
+  
+  ## References
+  
+  - API Design Standard: `/backEnd/API_DESIGN_STANDARD.md`
+  - Implementation Summary: `/backEnd/IMPLEMENTATION_SUMMARY.md`
+  - Quick Start Guide: `/backEnd/QUICK_START.md`
 }
