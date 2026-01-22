@@ -13,7 +13,7 @@
 # 7. Logout
 # ============================================
 
-BASE_URL="http://localhost:8888/api/v1"
+BASE_URL="http://localhost:8188/api/v1"
 AUTH_URL="${BASE_URL}/auth"
 USER_URL="${BASE_URL}/users"
 
