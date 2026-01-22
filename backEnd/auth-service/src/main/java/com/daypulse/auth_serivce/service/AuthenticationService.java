@@ -4,14 +4,12 @@ import com.daypulse.auth_serivce.dto.request.*;
 import com.daypulse.auth_serivce.dto.response.*;
 import com.daypulse.auth_serivce.entity.RefreshToken;
 import com.daypulse.auth_serivce.entity.UserAuth;
+import com.daypulse.auth_serivce.enums.RoleEnum;
 import com.daypulse.auth_serivce.exception.AppException;
 import com.daypulse.auth_serivce.exception.ErrorCode;
 import com.daypulse.auth_serivce.mapper.UserMapper;
 import com.daypulse.auth_serivce.repository.RefreshTokenRepository;
 import com.daypulse.auth_serivce.repository.UserRepository;
-import com.daypulse.auth_serivce.util.constant.PredefinedRole;
-import com.daypulse.auth_serivce.entity.Role;
-import com.daypulse.auth_serivce.repository.RoleRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -54,7 +52,6 @@ public class AuthenticationService {
 
     UserRepository userRepository;
     RefreshTokenRepository refreshTokenRepository;
-    RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
@@ -72,10 +69,8 @@ public class AuthenticationService {
         user.setIsEmailVerified(false);
         user.setIsSetupComplete(false);
 
-        // Assign default role
-        HashSet<Role> roles = new HashSet<>();
-        roleRepository.findById(PredefinedRole.ROLE_USER).ifPresent(roles::add);
-        user.setRoles(roles);
+        // Assign default role (USER)
+        user.setRole(RoleEnum.USER);
 
         userRepository.save(user);
 
@@ -346,17 +341,22 @@ public class AuthenticationService {
 
     String buildScope(UserAuth user) {
         StringJoiner scopeJoiner = new StringJoiner(" ");
-        if (!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> {
-                scopeJoiner.add("ROLE_" + role.getName());
-                if (!CollectionUtils.isEmpty(role.getPermissions())) {
-                    role.getPermissions().forEach(permission -> scopeJoiner.add(permission.getName()));
-                }
-            });
-            return scopeJoiner.toString();
+        
+        // Add role to scope (e.g., "ROLE_USER", "ROLE_ADMIN")
+        RoleEnum role = user.getRole();
+        if (role != null) {
+            scopeJoiner.add(role.getRoleName());
+            
+            // Add all permissions associated with this role
+            role.getPermissions().forEach(permission -> 
+                scopeJoiner.add(permission.getPermissionName())
+            );
         } else {
-            return "";
+            // Fallback to default USER role if null
+            scopeJoiner.add(RoleEnum.USER.getRoleName());
         }
+        
+        return scopeJoiner.toString();
     }
 
     // Placeholder methods for future OTP functionality

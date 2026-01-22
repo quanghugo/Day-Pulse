@@ -48,12 +48,22 @@ public class SecurityConfig {
             "/auth/logout"
     };
 
+    /**
+     * ADMIN_ENDPOINTS: Require ADMIN role
+     * - /admin/**: All admin operations (role management, user management)
+     */
+    private final String[] ADMIN_ENDPOINTS = {
+            "/admin/**"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity, CustomJwtDecoder customJwtDecoder) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request
                         // Public endpoints - no authentication required
                         .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                        // Admin endpoints - require ADMIN role
+                        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
                         // Protected endpoints - require valid JWT in Authorization header
                         .requestMatchers(HttpMethod.POST, PROTECTED_ENDPOINTS).authenticated()
                         // All other requests require authentication

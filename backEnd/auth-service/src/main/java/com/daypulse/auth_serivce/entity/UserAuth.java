@@ -1,5 +1,6 @@
 package com.daypulse.auth_serivce.entity;
 
+import com.daypulse.auth_serivce.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -7,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -43,6 +43,9 @@ public class UserAuth {
     @UpdateTimestamp
     LocalDateTime updatedAt;
 
-    @ManyToMany
-    Set<Role> roles;
+    // Simplified role model: Single role per user (enum-based for compile-time safety)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    RoleEnum role = RoleEnum.USER;
 }

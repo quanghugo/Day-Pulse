@@ -1,11 +1,10 @@
 package com.daypulse.auth_serivce.dto.response;
 
-import com.daypulse.auth_serivce.entity.Role;
+import com.daypulse.auth_serivce.enums.RoleEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -19,5 +18,5 @@ public class UserResponse {
     String firstName;
     String lastName;
     LocalDate dob;
-    Set<Role> roles;
+    RoleEnum role;
 }
