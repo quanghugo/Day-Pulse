@@ -14,24 +14,6 @@ headers {
   Content-Type: application/json
 }
 
-docs {
-  Token Validation Endpoint
-  
-  Validates if a token is still valid (not expired or revoked).
-  Used by API Gateway and other services for token validation.
-  
-  Request:
-  - token: Access token or refresh token to validate
-  
-  Response:
-  - valid: Boolean indicating if token is valid
-  
-  Checks performed:
-  - JWT signature validation
-  - Token expiration check
-  - Revocation status (if applicable)
-}
-
 body:json {
   {
     "token": "{{user1_access_token}}"
@@ -52,4 +34,22 @@ script:post-response {
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  Token Validation Endpoint
+  
+  Validates if a token is still valid (not expired or revoked).
+  Used by API Gateway and other services for token validation.
+  
+  Request:
+  - token: Access token or refresh token to validate
+  
+  Response:
+  - valid: Boolean indicating if token is valid
+  
+  Checks performed:
+  - JWT signature validation
+  - Token expiration check
+  - Revocation status (if applicable)
 }

@@ -1,0 +1,51 @@
+meta {
+  name: Get My Auth Info
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{base_url}}/users/my-info
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{user1_access_token}}
+}
+
+docs {
+  Get Current User's Auth Info (Protected Endpoint)
+  
+  Returns the authenticated user's basic authentication information from Auth Service.
+  This is different from Get My Profile which returns full profile from User Service.
+  
+  Response includes:
+  - id: User UUID
+  - email: User's email address
+  - isEmailVerified: Email verification status
+  - isSetupComplete: Profile setup completion status
+  
+  This endpoint is from Auth Service and returns UserResponse (auth info only).
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('Retrieved User 1 auth info successfully', () => {
+          expect(jsonData.result).to.not.be.null;
+          expect(jsonData.result.id).to.not.be.null;
+      });
+      
+      test('Response matches UserResponse structure from Auth Service', () => {
+          expect(jsonData.result).to.have.property('id');
+          expect(jsonData.result).to.have.property('email');
+      });
+      
+      console.log('User auth info:', jsonData.result);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

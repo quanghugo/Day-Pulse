@@ -1,0 +1,59 @@
+meta {
+  name: Get All Roles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/admin/roles
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{admin_access_token}}
+}
+
+docs {
+  Get All Roles (Admin Only)
+  
+  Returns a list of all available roles in the system with their permissions.
+  Requires ADMIN role to access.
+  
+  Response:
+  - List of RoleInfoResponse objects
+  - Each role includes: name, displayName, permissions (Set<String>)
+  
+  Available roles:
+  - USER: Regular user with basic permissions
+  - MODERATOR: Chat moderators with moderation capabilities
+  - ADMIN: System administrators with full access
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('Retrieved all roles successfully', () => {
+          expect(jsonData.result).to.not.be.null;
+          expect(Array.isArray(jsonData.result)).to.be.true;
+      });
+      
+      if (jsonData.result && jsonData.result.length > 0) {
+          test('Response items match RoleInfoResponse structure', () => {
+              const firstRole = jsonData.result[0];
+              expect(firstRole).to.have.property('name');
+              expect(firstRole).to.have.property('displayName');
+              expect(firstRole).to.have.property('permissions');
+          });
+      }
+      
+      console.log('Available roles:', jsonData.result.length);
+      jsonData.result.forEach(role => {
+          console.log(`- ${role.name} (${role.displayName}): ${role.permissions.length} permissions`);
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

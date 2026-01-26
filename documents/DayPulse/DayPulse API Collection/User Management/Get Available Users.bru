@@ -31,6 +31,15 @@ script:post-response {
           expect(Array.isArray(jsonData.result)).to.be.true;
       });
       
+      if (jsonData.result && jsonData.result.length > 0) {
+          test('Response items match UserSummaryResponse structure', () => {
+              const firstUser = jsonData.result[0];
+              expect(firstUser).to.have.property('id');
+              expect(firstUser).to.have.property('username');
+              expect(firstUser).to.have.property('name');
+          });
+      }
+      
       console.log('Available users count:', jsonData.result.length);
   }
 }

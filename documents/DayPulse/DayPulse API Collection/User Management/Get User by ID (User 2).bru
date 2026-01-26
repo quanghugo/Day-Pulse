@@ -27,7 +27,14 @@ script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('Retrieved User 2 profile by ID successfully', () => {
+          expect(jsonData.result).to.not.be.null;
           expect(jsonData.result.id).to.equal(bru.getEnvVar('user2_id'));
+      });
+      
+      test('Response matches UserResponse structure', () => {
+          expect(jsonData.result).to.have.property('id');
+          expect(jsonData.result).to.have.property('username');
+          expect(jsonData.result).to.have.property('name');
       });
       
       console.log('User 2 profile:', jsonData.result);

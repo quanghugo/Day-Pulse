@@ -1,0 +1,56 @@
+meta {
+  name: Update User Role
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{base_url}}/admin/users/{{user2_id}}/role
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{admin_access_token}}
+}
+
+docs {
+  Update User Role (Admin Only)
+  
+  Updates a user's role. Requires ADMIN role to access.
+  
+  Request:
+  - role: Role enum value (USER, MODERATOR, or ADMIN)
+  
+  Response:
+  - Updated UserSummary with new role information
+  
+  Note: Replace {{user2_id}} with the UUID of the user whose role you want to update.
+}
+
+body:json {
+  {
+    "role": "MODERATOR"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      test('User role updated successfully', () => {
+          expect(jsonData.result).to.not.be.null;
+      });
+      
+      test('Response matches UserSummary structure', () => {
+          expect(jsonData.result).to.have.property('id');
+          expect(jsonData.result).to.have.property('email');
+      });
+      
+      console.log('User role updated:', jsonData.result);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

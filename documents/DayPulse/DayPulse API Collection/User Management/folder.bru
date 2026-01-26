@@ -12,13 +12,16 @@ docs {
   
   All endpoints in this folder require Bearer token authentication.
   
-  ## Profile Management
+  ## Profile Management (User Service)
   - Setup Profile - Complete profile after registration
-  - Get My Profile - Retrieve current user's profile
+  - Get My Profile - Retrieve current user's profile from User Service
   - Update My Profile - Partial update using PATCH
   - Get User by ID - View other users' profiles
   
-  ## User Discovery
+  ## Auth Info (Auth Service)
+  - Get My Auth Info - Get basic auth information from Auth Service (different from profile)
+  
+  ## User Discovery (User Service)
   - Get Suggested Users - Recommended users to follow
   - Get Available Users - All active users in system
   

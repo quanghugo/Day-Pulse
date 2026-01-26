@@ -1,0 +1,22 @@
+meta {
+  name: Admin
+  seq: 4
+}
+
+auth {
+  mode: inherit
+}
+
+docs {
+  # Admin Endpoints
+  
+  All endpoints in this folder require ADMIN role and Bearer token authentication.
+  These endpoints are for system administrators to manage users and roles.
+  
+  ## Role Management
+  - Get All Roles - List all available roles with their permissions
+  - Update User Role - Change a user's role (requires ADMIN role)
+  
+  Note: To use these endpoints, you need to login with an account that has ADMIN role.
+  The admin token should be stored in admin_access_token environment variable.
+}

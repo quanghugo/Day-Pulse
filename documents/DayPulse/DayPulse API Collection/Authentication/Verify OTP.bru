@@ -1,0 +1,63 @@
+meta {
+  name: Verify OTP
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{base_url}}/auth/verify-otp
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+docs {
+  OTP Verification Endpoint
+  
+  Verifies the OTP code sent to user's email after registration or password reset.
+  This is a future email verification feature.
+  
+  Request:
+  - email: User's email address
+  - code: 6-digit OTP code
+  
+  Response:
+  - AuthenticationResponse with tokens if verification successful
+  - User can then login with the received tokens
+}
+
+body:json {
+  {
+    "email": "test@gmail.com",
+    "code": "123456"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      const jsonData = res.getBody();
+      if (jsonData.result && jsonData.result.tokens) {
+          test('OTP verified successfully', () => {
+              expect(jsonData.result.tokens.accessToken).to.not.be.null;
+          });
+          
+          // Store tokens if verification successful
+          bru.setEnvVar('user1_access_token', jsonData.result.tokens.accessToken);
+          bru.setEnvVar('user1_refresh_token', jsonData.result.tokens.refreshToken);
+          
+          if (jsonData.result.user && jsonData.result.user.id) {
+              bru.setEnvVar('user1_id', jsonData.result.user.id);
+          }
+          
+          console.log('OTP verified - tokens received');
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

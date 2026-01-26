@@ -34,7 +34,11 @@ script:post-response {
       if (jsonData.result && jsonData.result.tokens) {
           bru.setEnvVar('user2_access_token', jsonData.result.tokens.accessToken);
           bru.setEnvVar('user2_refresh_token', jsonData.result.tokens.refreshToken);
-          bru.setEnvVar('user2_id', jsonData.result.user.id);
+          
+          // Store user ID from UserSummary
+          if (jsonData.result.user && jsonData.result.user.id) {
+              bru.setEnvVar('user2_id', jsonData.result.user.id);
+          }
           
           test('User 2 logged in successfully', () => {
               expect(jsonData.result.tokens.accessToken).to.not.be.null;
@@ -46,6 +50,11 @@ script:post-response {
           
           test('Token response includes tokenType', () => {
               expect(jsonData.result.tokens.tokenType).to.equal('Bearer');
+          });
+          
+          test('Response includes user information', () => {
+              expect(jsonData.result.user).to.not.be.null;
+              expect(jsonData.result.user.id).to.not.be.null;
           });
           
           console.log('User2 ID:', jsonData.result.user.id);

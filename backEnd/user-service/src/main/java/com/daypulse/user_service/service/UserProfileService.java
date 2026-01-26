@@ -6,6 +6,7 @@ import com.daypulse.user_service.dto.response.UserResponse;
 import com.daypulse.user_service.dto.response.UserSummaryResponse;
 import com.daypulse.user_service.entity.UserProfile;
 import com.daypulse.user_service.entity.UserStats;
+import com.daypulse.user_service.exception.ErrorCode;
 import com.daypulse.user_service.mapper.UserProfileMapper;
 import com.daypulse.user_service.repository.UserProfileRepository;
 import com.daypulse.user_service.repository.UserStatsRepository;
@@ -32,7 +33,7 @@ public class UserProfileService {
     public UserResponse setupProfile(UUID userId, ProfileSetupRequest request) {
         // Check if username is already taken
         if (userProfileRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new RuntimeException(ErrorCode.USERNAME_ALREADY_EXISTS.getMessage());
         }
 
         UserProfile profile = userProfileMapper.toUserProfile(request);
@@ -60,19 +61,19 @@ public class UserProfileService {
 
     public UserResponse getMyProfile(UUID userId) {
         UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                .orElseThrow(() -> new RuntimeException(ErrorCode.PROFILE_NOT_FOUND.getMessage()));
         return userProfileMapper.toUserResponse(profile);
     }
 
     @Transactional
     public UserResponse updateMyProfile(UUID userId, ProfileUpdateRequest request) {
         UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                .orElseThrow(() -> new RuntimeException(ErrorCode.PROFILE_NOT_FOUND.getMessage()));
 
         // Check if new username is taken by another user
         if (request.getUsername() != null && !request.getUsername().equals(profile.getUsername())) {
             if (userProfileRepository.existsByUsername(request.getUsername())) {
-                throw new RuntimeException("Username already exists");
+                throw new RuntimeException(ErrorCode.USERNAME_ALREADY_EXISTS.getMessage());
             }
         }
 
@@ -92,7 +93,7 @@ public class UserProfileService {
 
     public UserResponse getUserById(UUID userId) {
         UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
         return userProfileMapper.toUserResponse(profile);
     }
 
@@ -115,7 +116,7 @@ public class UserProfileService {
     // Internal API method
     public UserSummaryResponse getUserSummary(UUID userId) {
         UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_FOUND.getMessage()));
         return userProfileMapper.toUserSummaryResponse(profile);
     }
 

@@ -22,12 +22,24 @@ docs {
   Uses PATCH method for partial updates (REST standard).
   
   All fields are optional - only provided fields are updated.
+  
+  Request fields (all optional):
+  - username: 3-50 characters
+  - name: max 100 characters
+  - bio: max 500 characters
+  - avatarUrl: max 500 characters
+  - timezone: max 50 characters
+  - language: max 5 characters
 }
 
 body:json {
   {
+    "username": "johndoe",
+    "name": "John Doe",
     "bio": "Updated bio - Full stack developer",
-    "timezone": "Asia/Ho_Chi_Minh"
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "language": "en"
   }
 }
 

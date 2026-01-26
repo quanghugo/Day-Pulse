@@ -41,9 +41,26 @@ script:post-response {
           expect(jsonData.result.content).to.be.an('array');
       });
       
+      test('Response is paginated (Page object)', () => {
+          expect(jsonData.result).to.have.property('content');
+          expect(jsonData.result).to.have.property('totalElements');
+          expect(jsonData.result).to.have.property('number');
+          expect(jsonData.result).to.have.property('size');
+      });
+      
+      if (jsonData.result.content && jsonData.result.content.length > 0) {
+          test('Items match UserSummaryResponse structure', () => {
+              const firstItem = jsonData.result.content[0];
+              expect(firstItem).to.have.property('id');
+              expect(firstItem).to.have.property('username');
+              expect(firstItem).to.have.property('name');
+          });
+      }
+      
       console.log('Total following:', jsonData.result.totalElements);
       console.log('Current page:', jsonData.result.number);
       console.log('Page size:', jsonData.result.size);
+      console.log('Items on page:', jsonData.result.content.length);
   }
 }
 

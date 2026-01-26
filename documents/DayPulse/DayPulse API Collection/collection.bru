@@ -36,48 +36,110 @@ docs {
   - **Auth Service** (Port 8180): Handles authentication and user accounts
   - **User Service** (Port 8181): Manages user profiles and follow system
   
+  ## Endpoints Overview
+  
+  ### Authentication Folder
+  **Public Endpoints:**
+  - `POST /auth/signup` - Create new account (preferred)
+  - `POST /auth/register` - Create account (deprecated, backward compatible)
+  - `POST /auth/login` - Authenticate and receive tokens
+  - `POST /auth/refresh` - Renew access token
+  - `POST /auth/introspect` - Validate token status
+  - `POST /auth/verify-otp` - Verify OTP code (future feature)
+  - `POST /auth/forgot-password` - Initiate password reset (future feature)
+  
+  **Protected Endpoints:**
+  - `POST /auth/logout` - Revoke tokens
+  
+  ### User Management Folder
+  **Profile Management (User Service):**
+  - `POST /users/me/setup` - Setup user profile after registration
+  - `GET /users/me` - Get current user's profile
+  - `PATCH /users/me` - Update current user's profile
+  - `GET /users/{id}` - Get user profile by ID
+  
+  **Auth Info (Auth Service):**
+  - `GET /users/my-info` - Get current user's auth information
+  
+  **User Discovery (User Service):**
+  - `GET /users/suggested` - Get suggested users to follow
+  - `GET /users/available` - Get all available users
+  
+  ### Follow System Folder
+  - `POST /users/{id}/follow` - Follow a user
+  - `DELETE /users/{id}/follow` - Unfollow a user
+  - `GET /users/{id}/followers` - Get user's followers (paginated)
+  - `GET /users/{id}/following` - Get user's following list (paginated)
+  
+  ### Admin Folder
+  **Admin Only (Requires ADMIN role):**
+  - `GET /admin/roles` - Get all available roles with permissions
+  - `PATCH /admin/users/{userId}/role` - Update user's role
+  
   ## Test Flow
   
   ### Complete End-to-End Test Sequence:
   
   1. **Authentication**
-     - Signup User 1 (`/auth/signup`)
-     - Register User 2 (`/auth/register` - deprecated but functional)
-     - Login both users (store tokens)
-     - Introspect token to verify validity
+     - Signup User 1 (`POST /auth/signup`)
+     - Register User 2 (`POST /auth/register` - deprecated but functional)
+     - Login User 1 (`POST /auth/login`)
+     - Login User 2 (`POST /auth/login`)
+     - Introspect token to verify validity (`POST /auth/introspect`)
   
   2. **User Profiles**
-     - Get User 1's profile (`/users/me`)
-     - Setup User 1's profile (`/users/me/setup`)
-     - Setup User 2's profile
+     - Get User 1's auth info (`GET /users/my-info`)
+     - Get User 1's profile (`GET /users/me`)
+     - Setup User 1's profile (`POST /users/me/setup`)
+     - Setup User 2's profile (`POST /users/me/setup`)
      - Update User 1's profile (`PATCH /users/me`)
-     - Get User 2 by ID
+     - Get User 2 by ID (`GET /users/{id}`)
   
   3. **User Discovery**
-     - Get suggested users
-     - Get available users
+     - Get suggested users (`GET /users/suggested`)
+     - Get available users (`GET /users/available`)
   
   4. **Follow System**
      - User 1 follows User 2 (`POST /users/{id}/follow`)
-     - Get User 2's followers
-     - Get User 1's following list
+     - Get User 2's followers (`GET /users/{id}/followers`)
+     - Get User 1's following list (`GET /users/{id}/following`)
      - User 1 unfollows User 2 (`DELETE /users/{id}/follow`)
   
   5. **Token Management**
-     - Refresh access token (`/auth/refresh`)
-     - Logout User 1 (`/auth/logout`)
+     - Refresh access token (`POST /auth/refresh`)
+     - Logout User 1 (`POST /auth/logout`)
      - Try accessing protected endpoint (should fail)
+  
+  6. **Admin Operations** (Optional - requires admin account)
+     - Get all roles (`GET /admin/roles`)
+     - Update user role (`PATCH /admin/users/{userId}/role`)
   
   ## Environment Variables
   
   The collection uses these environment variables (auto-populated from responses):
-  - `base_url`: API Gateway base URL
+  - `base_url`: API Gateway base URL (default: http://localhost:8188/api/v1)
   - `user1_access_token`: User 1's JWT access token
   - `user1_refresh_token`: User 1's refresh token
   - `user2_access_token`: User 2's JWT access token
   - `user2_refresh_token`: User 2's refresh token
   - `user1_id`: User 1's UUID
   - `user2_id`: User 2's UUID
+  - `admin_access_token`: Admin user's JWT access token (for admin endpoints)
+  
+  ## Response Structures
+  
+  **Auth Service Responses:**
+  - `ApiBaseResponse<T>`: `{code: 1000, message: "Success", result: T}`
+  - `AuthenticationResponse`: `{user: UserSummary, tokens: TokenPair}`
+  - `TokenPair`: `{accessToken, refreshToken, expiresIn, tokenType: "Bearer"}`
+  - `RegisterResponse`: `{success: true, userId, email, tokens?, user?}`
+  
+  **User Service Responses:**
+  - `ApiResponse<T>`: `{code: 1000, message?, result: T}`
+  - `UserResponse`: Full profile with all fields
+  - `UserSummaryResponse`: `{id, username, name, avatarUrl, isOnline}`
+  - `FollowResponse`: `{success: boolean, message: string}`
+  - Paginated responses: `Page<T>` with `{content, totalElements, number, size}`
   
   ## Standards Compliance
   

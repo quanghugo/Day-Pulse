@@ -31,10 +31,16 @@ script:post-response {
   if (res.getStatus() === 200) {
       const jsonData = res.getBody();
       test('User 1 unfollowed User 2 successfully', () => {
+          expect(jsonData.result).to.not.be.null;
           expect(jsonData.result.success).to.be.true;
       });
       
-      console.log('Follow relationship removed');
+      test('Response matches FollowResponse structure', () => {
+          expect(jsonData.result).to.have.property('success');
+          expect(jsonData.result).to.have.property('message');
+      });
+      
+      console.log('Follow relationship removed:', jsonData.result.message);
   }
 }
 
