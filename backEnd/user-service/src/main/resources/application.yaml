@@ -22,6 +22,10 @@ spring:
         format_sql: true
     show-sql: true
 
+# JWT Configuration (shared with gateway for service-to-service authentication)
+jwt:
+  signing-key: fbX2a4nQ4tdMnfExFUl+uA9aD9IFS+csS8GP96pR75RxrCiUcEYvpn+b4wWsgJshvXMUQiDUxhEBxA9RdPj+OQ==
+
 # TODO: [FUTURE-REDIS] Add caching configuration
 # spring:
 #   cache:

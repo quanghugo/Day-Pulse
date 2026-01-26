@@ -1,5 +1,6 @@
 package com.daypulse.api_gateway.configuration;
 
+import com.daypulse.api_gateway.security.GatewayAuthorizationFilter;
 import com.daypulse.api_gateway.security.GatewayJwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final GatewayJwtAuthenticationFilter jwtAuthenticationFilter;
+    private final GatewayAuthorizationFilter authorizationFilter;
 
     /**
      * PUBLIC_ENDPOINTS: No authentication required
@@ -59,7 +61,9 @@ public class SecurityConfig {
                         .anyExchange().authenticated()
                 )
                 // Add custom JWT filter before authorization
-                .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION);
+                .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                // Add authorization filter after authentication
+                .addFilterAfter(authorizationFilter, SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
     }

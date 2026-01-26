@@ -3,6 +3,7 @@ package com.daypulse.user_service.controller;
 import com.daypulse.user_service.dto.request.ProfileSetupRequest;
 import com.daypulse.user_service.dto.request.ProfileUpdateRequest;
 import com.daypulse.user_service.dto.response.*;
+import com.daypulse.user_service.security.CurrentUser;
 import com.daypulse.user_service.service.FollowService;
 import com.daypulse.user_service.service.UserProfileService;
 import jakarta.validation.Valid;
@@ -28,15 +29,14 @@ public class UserController {
     /**
      * POST /users/me/setup - Protected endpoint
      * STANDARD: Client sends Authorization: Bearer <token> to API Gateway
-     * Gateway extracts userId from JWT and forwards as X-User-Id header
+     * Gateway validates token and forwards authenticated user context
      * Sets up user profile after registration
      */
     @PostMapping("/me/setup")
-    public ApiResponse<UserResponse> setupProfile(
-            @RequestHeader("X-User-Id") String userId,
-            @RequestBody @Valid ProfileSetupRequest request) {
+    public ApiResponse<UserResponse> setupProfile(@RequestBody @Valid ProfileSetupRequest request) {
+        UUID userId = CurrentUser.getUserId();
         log.info("Setting up profile for user: {}", userId);
-        UserResponse response = userProfileService.setupProfile(UUID.fromString(userId), request);
+        UserResponse response = userProfileService.setupProfile(userId, request);
         return ApiResponse.<UserResponse>builder()
                 .result(response)
                 .build();
@@ -45,12 +45,13 @@ public class UserController {
     /**
      * GET /users/me - Protected endpoint
      * STANDARD: Client sends Authorization: Bearer <token> to API Gateway
-     * Gateway extracts userId from JWT and forwards as X-User-Id header
+     * Gateway validates token and forwards authenticated user context
      * Returns current user's profile
      */
     @GetMapping("/me")
-    public ApiResponse<UserResponse> getMyProfile(@RequestHeader("X-User-Id") String userId) {
-        UserResponse response = userProfileService.getMyProfile(UUID.fromString(userId));
+    public ApiResponse<UserResponse> getMyProfile() {
+        UUID userId = CurrentUser.getUserId();
+        UserResponse response = userProfileService.getMyProfile(userId);
         return ApiResponse.<UserResponse>builder()
                 .result(response)
                 .build();
@@ -59,15 +60,14 @@ public class UserController {
     /**
      * PATCH /users/me - Protected endpoint
      * STANDARD: Client sends Authorization: Bearer <token> to API Gateway
-     * Gateway extracts userId from JWT and forwards as X-User-Id header
+     * Gateway validates token and forwards authenticated user context
      * Updates current user's profile
      */
     @PatchMapping("/me")
-    public ApiResponse<UserResponse> updateMyProfile(
-            @RequestHeader("X-User-Id") String userId,
-            @RequestBody @Valid ProfileUpdateRequest request) {
+    public ApiResponse<UserResponse> updateMyProfile(@RequestBody @Valid ProfileUpdateRequest request) {
+        UUID userId = CurrentUser.getUserId();
         log.info("Updating profile for user: {}", userId);
-        UserResponse response = userProfileService.updateMyProfile(UUID.fromString(userId), request);
+        UserResponse response = userProfileService.updateMyProfile(userId, request);
         return ApiResponse.<UserResponse>builder()
                 .result(response)
                 .build();
@@ -106,22 +106,20 @@ public class UserController {
     }
 
     @PostMapping("/{id}/follow")
-    public ApiResponse<FollowResponse> followUser(
-            @RequestHeader("X-User-Id") String userId,
-            @PathVariable UUID id) {
+    public ApiResponse<FollowResponse> followUser(@PathVariable UUID id) {
+        UUID userId = CurrentUser.getUserId();
         log.info("User {} following user {}", userId, id);
-        FollowResponse response = followService.followUser(UUID.fromString(userId), id);
+        FollowResponse response = followService.followUser(userId, id);
         return ApiResponse.<FollowResponse>builder()
                 .result(response)
                 .build();
     }
 
     @DeleteMapping("/{id}/follow")
-    public ApiResponse<FollowResponse> unfollowUser(
-            @RequestHeader("X-User-Id") String userId,
-            @PathVariable UUID id) {
+    public ApiResponse<FollowResponse> unfollowUser(@PathVariable UUID id) {
+        UUID userId = CurrentUser.getUserId();
         log.info("User {} unfollowing user {}", userId, id);
-        FollowResponse response = followService.unfollowUser(UUID.fromString(userId), id);
+        FollowResponse response = followService.unfollowUser(userId, id);
         return ApiResponse.<FollowResponse>builder()
                 .result(response)
                 .build();
