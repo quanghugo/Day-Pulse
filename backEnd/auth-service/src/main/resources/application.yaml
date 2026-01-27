@@ -17,7 +17,42 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
 
+  # Keycloak OAuth2 Resource Server Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8888/realms/daypulse
+          jwk-set-uri: http://localhost:8888/realms/daypulse/protocol/openid-connect/certs
+      client:
+        registration:
+          keycloak:
+            client-id: daypulse-backend
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:your-client-secret-here}
+            authorization-grant-type: client_credentials
+            scope: openid
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8888/realms/daypulse
+            token-uri: http://localhost:8888/realms/daypulse/protocol/openid-connect/token
+
+# Keycloak Configuration
+keycloak:
+  realm: daypulse
+  auth-server-url: http://localhost:8888
+  resource: daypulse-backend
+  credentials:
+    secret: ${KEYCLOAK_CLIENT_SECRET:your-client-secret-here}
+  # Admin client credentials for user management
+  admin:
+    server-url: http://localhost:8888
+    realm: master
+    client-id: admin-cli
+    username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+
+# Legacy JWT config - will be phased out
 jwt:
   signing-key: fbX2a4nQ4tdMnfExFUl+uA9aD9IFS+csS8GP96pR75RxrCiUcEYvpn+b4wWsgJshvXMUQiDUxhEBxA9RdPj+OQ==
   valid-duration: 3600 # in second
-  refreshable-duration: 36000 # insecond
+  refreshable-duration: 36000 # in second

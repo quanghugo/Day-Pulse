@@ -24,13 +24,15 @@ public class UserAuth {
     @Column(unique = true, nullable = false)
     String email;
 
-    String passwordHash;
+    /**
+     * Keycloak User ID
+     * This links our local user record to the Keycloak user
+     * Password and OAuth credentials are stored in Keycloak
+     */
+    @Column(unique = true)
+    UUID keycloakId;
 
-    // TODO: [FUTURE-OAUTH] OAuth provider integration (Google, Facebook, etc.)
-    String oauthProvider;
-    String oauthId;
-
-    // TODO: [FUTURE-EMAIL] Email verification flow
+    // Email verification status (managed by Keycloak but cached here)
     @Builder.Default
     Boolean isEmailVerified = false;
 
@@ -43,7 +45,7 @@ public class UserAuth {
     @UpdateTimestamp
     LocalDateTime updatedAt;
 
-    // Simplified role model: Single role per user (enum-based for compile-time safety)
+    // Role stored locally for quick access (synced from Keycloak)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

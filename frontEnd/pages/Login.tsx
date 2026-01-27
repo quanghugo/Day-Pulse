@@ -1,34 +1,33 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store';
-import { mockService } from '../services/mock';
+import { keycloakLogin, keycloakLoginGoogle } from '../services/keycloakService';
 import { LogoIcon } from '../components/Icons';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await mockService.login();
-      setAuth(data.user, data.tokens);
-      navigate('/feed');
+      // Redirect to Keycloak login page
+      keycloakLogin();
     } catch (err) {
       alert('Login failed');
-    } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    // Mock Google Login
     setLoading(true);
-    setTimeout(() => {
-      handleLogin({ preventDefault: () => {} } as any);
-    }, 1000);
+    try {
+      // Redirect to Google OAuth via Keycloak
+      keycloakLoginGoogle();
+    } catch (err) {
+      alert('Google login failed');
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,7 +44,8 @@ const Login: React.FC = () => {
           
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-slate-700 dark:text-white font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 mb-6"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-slate-700 dark:text-white font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 mb-6 disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -53,7 +53,7 @@ const Login: React.FC = () => {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Sign in with Google
+            {loading ? 'Connecting...' : 'Sign in with Google'}
           </button>
 
           <div className="relative mb-6">
@@ -70,7 +70,7 @@ const Login: React.FC = () => {
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Username or Email</label>
               <input
                 type="text"
-                defaultValue="arivera"
+                name="username"
                 required
                 className="block w-full rounded-2xl border-none bg-slate-50 dark:bg-slate-800 px-4 py-3 focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white text-base"
               />
@@ -83,7 +83,7 @@ const Login: React.FC = () => {
               </div>
               <input
                 type="password"
-                defaultValue="password"
+                name="password"
                 required
                 className="block w-full rounded-2xl border-none bg-slate-50 dark:bg-slate-800 px-4 py-3 focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white text-base"
               />
