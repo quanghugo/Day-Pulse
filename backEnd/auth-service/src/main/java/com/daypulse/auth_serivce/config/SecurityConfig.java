@@ -36,6 +36,7 @@ public class SecurityConfig {
             "/auth/signup",
             "/auth/register", // Keep for backward compatibility
             "/auth/login",
+            "/auth/introspect",
             "/auth/refresh",
             "/auth/verify-otp",
             "/auth/forgot-password"

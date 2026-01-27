@@ -29,6 +29,18 @@ public final class SecurityConstants {
     public static final String HEADER_USER_ID = "X-User-Id";
 
     /**
+     * Internal header name for username.
+     * Forwarded for convenience so downstream services can access username if needed.
+     */
+    public static final String HEADER_USER_USERNAME = "X-User-Username";
+
+    /**
+     * Internal header name for user email address.
+     * Forwarded for convenience so downstream services can access email if needed.
+     */
+    public static final String HEADER_USER_EMAIL = "X-User-Email";
+
+    /**
      * Internal header name for user roles.
      * Used by gateway to forward user roles/authorities to downstream services.
      * Format: space-separated roles (e.g., "ROLE_USER ROLE_ADMIN")

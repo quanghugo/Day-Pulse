@@ -469,7 +469,7 @@ http://localhost:8888/realms/daypulse/.well-known/openid-configuration
 You should see JSON with Keycloak endpoints:
 
 - `issuer`: `http://localhost:8888/realms/daypulse`
-- `authorization_endpoint`Now Base on project, I want to setup and test local when applied KeyCloak 
+- `authorization_endpoint`
 - `token_endpoint`
 - `jwks_uri`
 - etc.
@@ -650,4 +650,59 @@ After completing this setup:
 3. **Testing**: Verify authentication flows work end-to-end
 4. **User Migration**: Migrate existing users to Keycloak (if applicable)
 
-Refer to the main implementation plan for detailed integration steps.
+## Integration Verification
+
+After completing the setup, verify the integration:
+
+### 1. Verify Backend Configuration
+
+Check that backend services are configured correctly:
+
+```bash
+# Verify Keycloak JWK endpoint is accessible
+curl http://localhost:8888/realms/daypulse/protocol/openid-connect/certs
+
+# Should return JSON Web Key Set (JWKS)
+```
+
+### 2. Verify Frontend Configuration
+
+Check that frontend environment variables are set:
+
+```bash
+# In frontEnd/.env
+VITE_KEYCLOAK_URL=http://localhost:8888
+VITE_KEYCLOAK_REALM=daypulse
+VITE_KEYCLOAK_CLIENT_ID=daypulse-frontend
+```
+
+### 3. Test Authentication Flow
+
+1. Start all services (Keycloak, backend, frontend)
+2. Navigate to frontend login page
+3. Click "Sign in" - should redirect to Keycloak
+4. Login with test user credentials
+5. Should redirect back to frontend with tokens
+6. Access protected pages - should work
+
+### 4. Test API Endpoints
+
+```bash
+# Test registration
+curl -X POST http://localhost:8188/api/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"Test123!"}'
+
+# Test login
+curl -X POST http://localhost:8188/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"testuser@example.com","password":"password123"}'
+
+# Test protected endpoint (use token from login)
+curl -X GET http://localhost:8188/api/v1/users/my-info \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+For detailed integration documentation, see:
+- [Keycloak Integration Guide](back/KEYCLOAK_INTEGRATION.md)
+- [Testing Guide](back/TESTING_KEYCLOAK.md)

@@ -54,12 +54,14 @@ public class DataInitializer implements ApplicationRunner {
                 return;
             }
             
+            // Note: With Keycloak integration, admin user should be created in Keycloak
+            // This local user record will be linked via keycloakId after Keycloak user creation
             UserAuth admin = UserAuth.builder()
                     .email(adminEmail)
-                    .passwordHash(passwordEncoder.encode(adminPassword))
                     .role(RoleEnum.ADMIN)
                     .isEmailVerified(true)
                     .isSetupComplete(true)
+                    // keycloakId will be set after Keycloak user creation
                     .build();
             
             userRepository.save(admin);

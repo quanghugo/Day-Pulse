@@ -1,40 +1,34 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockService } from '../services/mock';
-import { useUIStore } from '../store';
+import api from '@/services/api/client';
+import { keycloakLoginGoogle } from '@/services/keycloakService';
 import { LogoIcon } from '@/components/icons';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { addToast } = useUIStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await mockService.register(formData.email);
-      addToast('Verification code sent to your email! 📧', 'success');
-      // Navigate to OTP page, passing the email
-      navigate('/verify-otp', { state: { email: formData.email } });
-    } catch (err) {
-      addToast('Registration failed. Please try again.', 'error');
-    } finally {
-      setLoading(false);
+    if (!formData.email || !formData.password) {
+      return;
     }
+    setLoading(true);
+    api.post('/auth/signup', formData)
+      .then(() => {
+        // Navigate to OTP verification screen, passing email along
+        navigate('/verify-otp', { state: { email: formData.email } });
+      })
+      .finally(() => setLoading(false));
   };
 
   const handleGoogleSignup = () => {
-    setLoading(true);
-    setTimeout(() => {
-       // Mock flow for Google
-       navigate('/setup-profile');
-    }, 1000);
+    // Keycloak Google login redirects to Google OAuth via Keycloak
+    keycloakLoginGoogle();
   };
 
   return (

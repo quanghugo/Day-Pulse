@@ -53,9 +53,15 @@ spring:
                 allowCredentials: true
                 maxAge: 3600
 
-# JWT Configuration
+# Keycloak Configuration for JWT Validation
+keycloak:
+  issuer-uri: http://localhost:8888/realms/daypulse
+  jwk-set-uri: http://localhost:8888/realms/daypulse/protocol/openid-connect/certs
+
+# Legacy JWT Configuration (deprecated - kept for backward compatibility)
+# Note: still used for gateway -> service HMAC signing (ServiceAuthenticationUtil)
 jwt:
-  signing-key: fbX2a4nQ4tdMnfExFUl+uA9aD9IFS+csS8GP96pR75RxrCiUcEYvpn+b4wWsgJshvXMUQiDUxhEBxA9RdPj+OQ==
+  signing-key: ${GATEWAY_SERVICE_HMAC_KEY:fbX2a4nQ4tdMnfExFUl+uA9aD9IFS+csS8GP96pR75RxrCiUcEYvpn+b4wWsgJshvXMUQiDUxhEBxA9RdPj+OQ==}
 
 # Service URLs
 auth-service:

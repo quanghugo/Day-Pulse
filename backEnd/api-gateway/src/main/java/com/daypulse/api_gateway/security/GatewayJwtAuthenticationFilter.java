@@ -86,27 +86,34 @@ public class GatewayJwtAuthenticationFilter implements WebFilter {
                         return createUnauthorizedResponse(exchange, "Token is invalid or revoked");
                     }
 
-                    // Step 3: Extract user information from JWT
-                    String userId = jwt.getClaimAsString(SecurityConstants.CLAIM_USER_ID);
-                    String scope = jwt.getClaimAsString(SecurityConstants.CLAIM_SCOPE);
-                    String username = jwt.getSubject();
+                    // Step 3: Extract user information from Keycloak JWT
+                    // Keycloak uses 'sub' claim for user ID (Keycloak user UUID)
+                    String userId = jwt.getSubject(); // Keycloak user ID from 'sub' claim
+                    String username = jwt.getClaimAsString("preferred_username");
+                    String email = jwt.getClaimAsString("email");
+                    if (!StringUtils.hasText(username)) {
+                        username = StringUtils.hasText(email) ? email : jwt.getSubject();
+                    }
 
                     if (!StringUtils.hasText(userId)) {
-                        log.error("JWT missing userId claim");
+                        log.error("JWT missing subject (user ID) claim");
                         return createUnauthorizedResponse(exchange, "Invalid token: missing user ID");
                     }
 
-                    // Step 4: Extract authorities from JWT scope claim
-                    List<SimpleGrantedAuthority> authorities = extractAuthorities(scope);
+                    // Step 4: Extract authorities from Keycloak JWT realm_access.roles
+                    List<SimpleGrantedAuthority> authorities = extractAuthoritiesFromKeycloak(jwt);
+                    String rolesString = authorities.stream()
+                            .map(auth -> auth.getAuthority())
+                            .collect(Collectors.joining(" "));
 
                     // Step 5: Create authentication object
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
 
                     // Step 6: Add user context headers to downstream requests with signature
-                    ServerHttpRequest mutatedRequest = addServiceHeaders(exchange.getRequest(), userId, scope);
+                    ServerHttpRequest mutatedRequest = addServiceHeaders(exchange.getRequest(), userId, username, email, rolesString);
 
-                    log.debug("Authenticated user: {} (userId: {}, roles: {})", username, userId, scope);
+                    log.debug("Authenticated user: {} (userId: {}, roles: {})", username, userId, rolesString);
 
                     // Step 7: Set authentication in security context and continue
                     return chain.filter(exchange.mutate().request(mutatedRequest).build())
@@ -151,15 +158,74 @@ public class GatewayJwtAuthenticationFilter implements WebFilter {
     }
 
     /**
+     * Extract authorities from Keycloak JWT realm_access.roles claim.
+     * Keycloak stores realm roles in a nested structure: realm_access.roles array
+     */
+    @SuppressWarnings("unchecked")
+    private List<SimpleGrantedAuthority> extractAuthoritiesFromKeycloak(Jwt jwt) {
+        try {
+            // Keycloak stores roles in realm_access.roles claim
+            Object realmAccess = jwt.getClaim("realm_access");
+            if (realmAccess instanceof java.util.Map) {
+                @SuppressWarnings("rawtypes")
+                java.util.Map realmAccessMap = (java.util.Map) realmAccess;
+                Object rolesObj = realmAccessMap.get("roles");
+                
+                if (rolesObj instanceof java.util.List) {
+                    java.util.List<?> rolesList = (java.util.List<?>) rolesObj;
+                    
+                    if (!rolesList.isEmpty()) {
+                        return rolesList.stream()
+                                .filter(String.class::isInstance)
+                                .map(String.class::cast)
+                                .map(roleStr -> {
+                                    // Add ROLE_ prefix if not present (Spring Security convention)
+                                    if (!roleStr.startsWith("ROLE_")) {
+                                        return "ROLE_" + roleStr;
+                                    }
+                                    return roleStr;
+                                })
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList());
+                    }
+                }
+            }
+            
+            // Fallback: try scope claim (space-separated)
+            String scope = jwt.getClaimAsString("scope");
+            if (StringUtils.hasText(scope)) {
+                return Arrays.stream(scope.split(" "))
+                        .filter(StringUtils::hasText)
+                        .map(role -> {
+                            if (!role.startsWith("ROLE_")) {
+                                return "ROLE_" + role;
+                            }
+                            return role;
+                        })
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+            }
+            
+            log.debug("No roles found in Keycloak JWT, using default {}", SecurityConstants.DEFAULT_ROLE);
+            return List.of(new SimpleGrantedAuthority(SecurityConstants.DEFAULT_ROLE));
+        } catch (Exception e) {
+            log.warn("Error extracting roles from Keycloak JWT: {}", e.getMessage());
+            return List.of(new SimpleGrantedAuthority(SecurityConstants.DEFAULT_ROLE));
+        }
+    }
+
+    /**
      * Add service-to-service authentication headers.
      */
-    private ServerHttpRequest addServiceHeaders(ServerHttpRequest request, String userId, String roles) {
+    private ServerHttpRequest addServiceHeaders(ServerHttpRequest request, String userId, String username, String email, String roles) {
         long timestamp = System.currentTimeMillis() / 1000;
         String rolesValue = StringUtils.hasText(roles) ? roles : SecurityConstants.DEFAULT_ROLE;
         String signature = serviceAuthUtil.generateSignature(userId, rolesValue, timestamp);
 
         return request.mutate()
                 .header(SecurityConstants.HEADER_USER_ID, userId)
+                .header(SecurityConstants.HEADER_USER_USERNAME, username)
+                .header(SecurityConstants.HEADER_USER_EMAIL, StringUtils.hasText(email) ? email : "")
                 .header(SecurityConstants.HEADER_USER_ROLES, rolesValue)
                 .header(SecurityConstants.HEADER_GATEWAY_SIGNATURE, signature)
                 .header(SecurityConstants.HEADER_GATEWAY_TIMESTAMP, String.valueOf(timestamp))

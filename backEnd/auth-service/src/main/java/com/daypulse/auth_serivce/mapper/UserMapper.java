@@ -12,7 +12,13 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    @Mapping(target = "passwordHash", source = "password")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "keycloakId", ignore = true)
+    @Mapping(target = "isEmailVerified", ignore = true)
+    @Mapping(target = "isSetupComplete", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "role", ignore = true)
     UserAuth toUserAuth(RegisterRequest request);
 
     UserAuth toUserAuth(UserCreationRequest request);

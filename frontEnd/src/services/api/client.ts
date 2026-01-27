@@ -2,7 +2,9 @@ import axios from 'axios';
 import { useAuthStore } from '@/store';
 
 const api = axios.create({
-  baseURL: 'https://api.daypulse.app', // Placeholder
+  // All backend calls go through the local API Gateway
+  // Example: http://localhost:8188/api/v1/users/me
+  baseURL: 'http://localhost:8188/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },

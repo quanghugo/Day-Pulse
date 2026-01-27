@@ -1,34 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store';
-import { mockService } from '@/services/mock';
+import { keycloakLogin, keycloakLoginGoogle, isKeycloakAuthenticated, getKeycloakUserProfile, getKeycloakToken, getKeycloakRefreshToken } from '@/services/keycloakService';
 import { LogoIcon } from '@/components/icons';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { setKeycloakAuth } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  // Check if already authenticated via Keycloak
+  useEffect(() => {
+    if (isKeycloakAuthenticated()) {
+      handleKeycloakAuth();
+    }
+  }, []);
+
+  const handleKeycloakAuth = async () => {
     try {
-      const data = await mockService.login();
-      setAuth(data.user, data.tokens);
-      navigate('/feed');
-    } catch (err) {
-      alert('Login failed');
-    } finally {
-      setLoading(false);
+      const keycloakProfile = await getKeycloakUserProfile();
+      const accessToken = getKeycloakToken();
+      const refreshToken = getKeycloakRefreshToken();
+      
+      if (keycloakProfile && accessToken && refreshToken) {
+        // Map Keycloak profile to User type
+        const user = {
+          id: keycloakProfile.id || '',
+          name: `${keycloakProfile.firstName || ''} ${keycloakProfile.lastName || ''}`.trim() || keycloakProfile.username || '',
+          username: keycloakProfile.username || keycloakProfile.email || '',
+          avatar: undefined,
+          bio: undefined,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          language: 'en' as const,
+          streak: 0,
+          followersCount: 0,
+          followingCount: 0,
+          lastUpdated: new Date().toISOString(),
+          isOnline: true,
+          isSetupComplete: false,
+        };
+        
+        await setKeycloakAuth(user);
+        navigate('/feed');
+      }
+    } catch (error) {
+      console.error('Failed to handle Keycloak auth:', error);
     }
   };
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Keycloak login redirects to Keycloak login page
+    keycloakLogin();
+  };
+
   const handleGoogleLogin = () => {
-    // Mock Google Login
-    setLoading(true);
-    setTimeout(() => {
-      handleLogin({ preventDefault: () => {} } as any);
-    }, 1000);
+    // Keycloak Google login redirects to Google OAuth via Keycloak
+    keycloakLoginGoogle();
   };
 
   return (

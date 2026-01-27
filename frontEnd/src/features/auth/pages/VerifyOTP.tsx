@@ -1,14 +1,13 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore, useUIStore } from '@/store';
-import { mockService } from '@/services/mock';
+import { useUIStore } from '@/store';
+import api from '@/services/api/client';
 import { LogoIcon } from '@/components/icons';
 
 const VerifyOTP: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setAuth } = useAuthStore();
   const { addToast } = useUIStore();
   
   // Get email from previous navigation state, or fallback
@@ -21,14 +20,14 @@ const VerifyOTP: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Mock OTP is '123456'
-      const data = await mockService.verifyOtp(email, otp);
-      setAuth(data.user, data.tokens);
-      addToast('Email verified successfully! ✅', 'success');
-      // Navigate to Setup Profile
-      navigate('/setup-profile');
+      await api.post('/auth/verify-otp', {
+        email,
+        code: otp,
+      });
+      addToast('Email verified successfully! ✅ Please sign in.', 'success');
+      navigate('/login');
     } catch (err) {
-      addToast('Invalid verification code. Try 123456.', 'error');
+      addToast('Invalid or expired verification code.', 'error');
     } finally {
       setLoading(false);
     }

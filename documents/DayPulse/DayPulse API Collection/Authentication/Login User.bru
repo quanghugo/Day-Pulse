@@ -16,22 +16,9 @@ headers {
 
 body:json {
   {
-    "email": "test@gmail.com",
+    "email": "tes12345t@gmail.com",
     "password": "password123"
   }
-}
-
-docs {
-  OAuth 2.0 Compliant Authentication
-  
-  Authenticates user with email and password.
-  Returns access token and refresh token following OAuth 2.0 standards.
-  
-  Response includes:
-  - accessToken: JWT for API authentication (1 hour validity)
-  - refreshToken: Token for renewing access token (10 hours validity)
-  - expiresIn: Token expiration in seconds
-  - tokenType: "Bearer" (OAuth 2.0 standard)
 }
 
 script:post-response {
@@ -74,4 +61,17 @@ script:post-response {
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  OAuth 2.0 Compliant Authentication
+  
+  Authenticates user with email and password.
+  Returns access token and refresh token following OAuth 2.0 standards.
+  
+  Response includes:
+  - accessToken: JWT for API authentication (1 hour validity)
+  - refreshToken: Token for renewing access token (10 hours validity)
+  - expiresIn: Token expiration in seconds
+  - tokenType: "Bearer" (OAuth 2.0 standard)
 }

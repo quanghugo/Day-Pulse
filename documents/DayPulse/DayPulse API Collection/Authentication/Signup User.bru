@@ -16,26 +16,9 @@ headers {
 
 body:json {
   {
-    "email": "newuser@gmail.com",
+    "email": "tes12345t@gmail.com",
     "password": "password123"
   }
-}
-
-docs {
-  OAuth 2.0 Standard Endpoint
-  
-  Creates a new user account using the standardized /auth/signup endpoint.
-  This is the preferred endpoint over /auth/register (deprecated).
-  
-  Request:
-  - email: User's email address
-  - password: User's password (will be hashed with BCrypt)
-  
-  Response:
-  - result.success: Boolean indicating successful registration
-  - result.userId: UUID of newly created user
-  - result.email: Registered email address
-  - (Optional) result.tokens: Auto-login tokens if enabled
 }
 
 script:post-response {
@@ -64,4 +47,21 @@ script:post-response {
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  OAuth 2.0 Standard Endpoint
+  
+  Creates a new user account using the standardized /auth/signup endpoint.
+  This is the preferred endpoint over /auth/register (deprecated).
+  
+  Request:
+  - email: User's email address
+  - password: User's password (will be hashed with BCrypt)
+  
+  Response:
+  - result.success: Boolean indicating successful registration
+  - result.userId: UUID of newly created user
+  - result.email: Registered email address
+  - (Optional) result.tokens: Auto-login tokens if enabled
 }

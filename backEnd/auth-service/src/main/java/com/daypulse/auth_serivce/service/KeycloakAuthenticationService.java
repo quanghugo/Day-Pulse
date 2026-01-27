@@ -3,14 +3,17 @@ package com.daypulse.auth_serivce.service;
 import com.daypulse.auth_serivce.dto.request.*;
 import com.daypulse.auth_serivce.dto.response.*;
 import com.daypulse.auth_serivce.entity.UserAuth;
+import com.daypulse.auth_serivce.entity.OtpCode;
 import com.daypulse.auth_serivce.enums.RoleEnum;
 import com.daypulse.auth_serivce.exception.AppException;
 import com.daypulse.auth_serivce.exception.ErrorCode;
 import com.daypulse.auth_serivce.mapper.UserMapper;
 import com.daypulse.auth_serivce.repository.UserRepository;
+import com.daypulse.auth_serivce.repository.OtpCodeRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -29,6 +32,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.ws.rs.core.Response;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -48,20 +52,25 @@ import java.util.*;
 public class KeycloakAuthenticationService {
 
     @Value("${keycloak.realm}")
+    @NonFinal
     String realm;
 
     @Value("${keycloak.auth-server-url}")
+    @NonFinal
     String authServerUrl;
 
     @Value("${keycloak.resource}")
+    @NonFinal
     String clientId;
 
     @Value("${keycloak.credentials.secret}")
+    @NonFinal
     String clientSecret;
 
     Keycloak keycloakAdminClient;
     UserRepository userRepository;
     UserMapper userMapper;
+    OtpCodeRepository otpCodeRepository;
     RestTemplate restTemplate = new RestTemplate();
 
     /**
@@ -88,6 +97,12 @@ public class KeycloakAuthenticationService {
 
             // Create user in Keycloak
             Response response = usersResource.create(keycloakUser);
+
+            if (response.getStatus() == 409) {
+                // User with this email already exists in Keycloak
+                log.warn("User already exists in Keycloak for email={}", request.getEmail());
+                throw new AppException(ErrorCode.USER_EXISTED);
+            }
 
             if (response.getStatus() != 201) {
                 log.error("Failed to create user in Keycloak. Status: {}", response.getStatus());
@@ -122,10 +137,23 @@ public class KeycloakAuthenticationService {
 
             userRepository.save(localUser);
 
+            // Generate OTP code for email verification
+            String otpCode = generateOtpCode();
+            OtpCode otp = OtpCode.builder()
+                    .user(localUser)
+                    .code(otpCode)
+                    .type("email_verify")
+                    .expiresAt(LocalDateTime.now().plusMinutes(15))
+                    .build();
+            otpCodeRepository.save(otp);
+
+            log.info("Generated email verification OTP for {}: {}", request.getEmail(), otpCode);
+            // TODO: Integrate real email sender instead of logging OTP
+
             log.info("User registered successfully: {}", request.getEmail());
 
             // TODO: [FUTURE-KAFKA] Publish event: auth.user.registered
-            // TODO: [FUTURE-EMAIL] Send verification email
+            // TODO: [FUTURE-EMAIL] Send verification email with OTP code
 
             return RegisterResponse.builder()
                     .success(true)
@@ -137,6 +165,12 @@ public class KeycloakAuthenticationService {
             log.error("Error registering user: {}", e.getMessage(), e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
+    }
+
+    private String generateOtpCode() {
+        // Simple 6-digit numeric OTP
+        int code = new Random().nextInt(900_000) + 100_000;
+        return String.valueOf(code);
     }
 
     /**
@@ -162,13 +196,38 @@ public class KeycloakAuthenticationService {
 
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(requestBody, headers);
 
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    tokenUrl,
-                    HttpMethod.POST,
-                    httpEntity,
-                    Map.class);
+            ResponseEntity<Map> response;
+            try {
+                response = restTemplate.exchange(
+                        tokenUrl,
+                        HttpMethod.POST,
+                        httpEntity,
+                        Map.class);
+            } catch (org.springframework.web.client.HttpClientErrorException e) {
+                // Extract error details from Keycloak response
+                String errorMessage = "Authentication failed";
+                if (e.getResponseBodyAsString() != null) {
+                    try {
+                        // Try to parse Keycloak error response
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                        Map<String, Object> errorBody = mapper.readValue(e.getResponseBodyAsString(), Map.class);
+                        String keycloakError = (String) errorBody.get("error_description");
+                        if (keycloakError != null) {
+                            errorMessage = keycloakError;
+                        } else {
+                            errorMessage = (String) errorBody.getOrDefault("error", "Authentication failed");
+                        }
+                    } catch (Exception parseEx) {
+                        errorMessage = e.getResponseBodyAsString();
+                    }
+                }
+                log.error("Keycloak authentication failed ({}): {}", e.getStatusCode(), errorMessage);
+                log.debug("Request details - client_id: {}, username: {}", clientId, request.getEmail());
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
 
             if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+                log.error("Keycloak returned unexpected status: {}", response.getStatusCode());
                 throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
 
@@ -177,6 +236,12 @@ public class KeycloakAuthenticationService {
             // Get user from local database
             UserAuth user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            // Ensure email has been verified via OTP before allowing login
+            if (Boolean.FALSE.equals(user.getIsEmailVerified())) {
+                log.warn("Login attempt with unverified email: {}", request.getEmail());
+                throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
+            }
 
             // Build response
             return AuthenticationResponse.builder()
@@ -324,9 +389,45 @@ public class KeycloakAuthenticationService {
         }
     }
 
-    // Placeholder methods for future OTP functionality
     public AuthenticationResponse verifyOtp(VerifyOtpRequest request) {
-        throw new UnsupportedOperationException("OTP verification not yet implemented with Keycloak");
+        // Find user by email
+        UserAuth user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        // Find valid OTP
+        LocalDateTime now = LocalDateTime.now();
+        OtpCode otp = otpCodeRepository
+                .findByUserAndCodeAndTypeAndUsedAtIsNullAndExpiresAtAfter(user, request.getCode(), "email_verify", now)
+                .orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID));
+
+        // Mark OTP as used
+        otp.setUsedAt(now);
+        otpCodeRepository.save(otp);
+
+        // Mark user as email verified locally
+        user.setIsEmailVerified(true);
+        userRepository.save(user);
+
+        // Optionally update Keycloak user emailVerified flag
+        try {
+            if (user.getKeycloakId() != null) {
+                RealmResource realmResource = keycloakAdminClient.realm(realm);
+                UserResource userResource = realmResource.users().get(user.getKeycloakId().toString());
+                UserRepresentation kcUser = userResource.toRepresentation();
+                kcUser.setEmailVerified(true);
+                userResource.update(kcUser);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to update emailVerified flag in Keycloak for user {}: {}", user.getEmail(), e.getMessage());
+        }
+
+        log.info("Email verified successfully for user: {}", user.getEmail());
+
+        // Do not auto-login here; frontend will redirect to /login
+        return AuthenticationResponse.builder()
+                .user(userMapper.toUserSummary(user))
+                .tokens(null)
+                .build();
     }
 
     public ApiBaseResponse<Void> forgotPassword(ForgotPasswordRequest request) {
