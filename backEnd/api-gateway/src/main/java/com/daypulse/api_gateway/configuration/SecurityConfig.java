@@ -20,14 +20,10 @@ public class SecurityConfig {
     /**
      * PUBLIC_ENDPOINTS: No authentication required
      * These endpoints can be accessed without Authorization header
-     * - /auth/signup, /auth/register: Create new account
-     * - /auth/login: User authentication
-     * - /auth/refresh: Renew access token using refresh token
-     * - /auth/introspect: Token validation (for service-to-service)
      */
     private final String[] PUBLIC_ENDPOINTS = {
         "/api/v1/auth/signup",
-        "/api/v1/auth/register",  // Backward compatibility
+        "/api/v1/auth/register",
         "/api/v1/auth/login",
         "/api/v1/auth/refresh",
         "/api/v1/auth/introspect",
@@ -38,8 +34,6 @@ public class SecurityConfig {
     /**
      * PROTECTED_ENDPOINTS: Require valid JWT in Authorization header
      * These endpoints require Bearer token authentication
-     * - /auth/logout: Revoke user tokens (requires authenticated user)
-     * - /users/**: All user profile operations
      */
     private final String[] PROTECTED_ENDPOINTS = {
         "/api/v1/auth/logout",

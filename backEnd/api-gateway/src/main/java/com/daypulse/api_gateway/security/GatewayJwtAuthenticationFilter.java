@@ -72,12 +72,7 @@ public class GatewayJwtAuthenticationFilter implements WebFilter {
     /**
      * Validate token via introspection and set authentication context.
      */
-    private Mono<Void> validateTokenAndSetContext(
-            ServerWebExchange exchange,
-            WebFilterChain chain,
-            Jwt jwt,
-            String token) {
-        
+    private Mono<Void> validateTokenAndSetContext(ServerWebExchange exchange, WebFilterChain chain, Jwt jwt, String token) {
         // Step 2: Check token revocation via introspection (with caching)
         return checkTokenValidity(token)
                 .flatMap(isValid -> {
