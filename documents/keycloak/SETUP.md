@@ -175,13 +175,13 @@ Click **"Next"**
 
 **Login settings**:
 
-- **Root URL**: `http://localhost:5173` (Vite dev server)
-- **Home URL**: `http://localhost:5173`
+- **Root URL**: `http://localhost:3000` (Vite dev server)
+- **Home URL**: `http://localhost:3000`
 - **Valid redirect URIs**:
-  - `http://localhost:5173/*`
-  - `http://localhost:5173/callback`
-- **Valid post logout redirect URIs**: `http://localhost:5173/*`
-- **Web origins**: `http://localhost:5173`
+  - `http://localhost:3000/*`
+  - `http://localhost:3000/callback`
+- **Valid post logout redirect URIs**: `http://localhost:3000/*`
+- **Web origins**: `http://localhost:3000`
 
 Click **"Save"**
 

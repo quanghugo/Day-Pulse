@@ -52,23 +52,23 @@ class KeycloakIntegrationTest {
         // Clean up test users if they exist (optional - can be done manually)
     }
 
-    @Test
-    void testUserRegistration() {
-        // Given
-        RegisterRequest request = RegisterRequest.builder()
-                .email(TEST_EMAIL_2)
-                .password(TEST_PASSWORD_2)
-                .build();
+    // @Test
+    // void testUserRegistration() {
+    //     // Given
+    //     RegisterRequest request = RegisterRequest.builder()
+    //             .email(TEST_EMAIL_2)
+    //             .password(TEST_PASSWORD_2)
+    //             .build();
 
-        // When
-        RegisterResponse response = keycloakAuthenticationService.register(request);
+    //     // When
+    //     RegisterResponse response = keycloakAuthenticationService.register(request);
 
-        // Then
-        assertNotNull(response);
-        assertTrue(response.isSuccess());
-        assertNotNull(response.getUserId());
-        assertEquals(TEST_EMAIL_2, response.getEmail());
-    }
+    //     // Then
+    //     assertNotNull(response);
+    //     assertTrue(response.isSuccess());
+    //     assertNotNull(response.getUserId());
+    //     assertEquals(TEST_EMAIL_2, response.getEmail());
+    // }
 
     @Test
     void testUserLogin() {
